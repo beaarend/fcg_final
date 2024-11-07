@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/home/joao/faculdade/FCG/fcg_final/build",
+  "command": "/usr/bin/c++  -I/home/joao/faculdade/FCG/fcg_final/include -I/home/joao/faculdade/FCG/fcg_final/lib/tinyobjloader -g -std=c++11 -Wall -Wno-unused-function -o CMakeFiles/main.dir/src/main.cpp.o -c /home/joao/faculdade/FCG/fcg_final/src/main.cpp",
+  "file": "/home/joao/faculdade/FCG/fcg_final/src/main.cpp",
+  "output": "CMakeFiles/main.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/joao/faculdade/FCG/fcg_final/build",
+  "command": "/usr/bin/c++  -I/home/joao/faculdade/FCG/fcg_final/include -I/home/joao/faculdade/FCG/fcg_final/lib/tinyobjloader -g -std=c++11 -Wall -Wno-unused-function -o CMakeFiles/main.dir/src/textrendering.cpp.o -c /home/joao/faculdade/FCG/fcg_final/src/textrendering.cpp",
+  "file": "/home/joao/faculdade/FCG/fcg_final/src/textrendering.cpp",
+  "output": "CMakeFiles/main.dir/src/textrendering.cpp.o"
+},
+{
+  "directory": "/home/joao/faculdade/FCG/fcg_final/build",
+  "command": "/usr/bin/cc  -I/home/joao/faculdade/FCG/fcg_final/include -I/home/joao/faculdade/FCG/fcg_final/lib/tinyobjloader -g -Wall -Wno-unused-function -o CMakeFiles/main.dir/src/glad.c.o -c /home/joao/faculdade/FCG/fcg_final/src/glad.c",
+  "file": "/home/joao/faculdade/FCG/fcg_final/src/glad.c",
+  "output": "CMakeFiles/main.dir/src/glad.c.o"
+},
+{
+  "directory": "/home/joao/faculdade/FCG/fcg_final/build",
+  "command": "/usr/bin/c++  -I/home/joao/faculdade/FCG/fcg_final/include -I/home/joao/faculdade/FCG/fcg_final/lib/tinyobjloader -g -std=c++11 -Wall -Wno-unused-function -o CMakeFiles/main.dir/src/tiny_obj_loader.cc.o -c /home/joao/faculdade/FCG/fcg_final/src/tiny_obj_loader.cc",
+  "file": "/home/joao/faculdade/FCG/fcg_final/src/tiny_obj_loader.cc",
+  "output": "CMakeFiles/main.dir/src/tiny_obj_loader.cc.o"
+}
+]
