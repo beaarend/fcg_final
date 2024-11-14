@@ -1,4 +1,0 @@
-/home/joao/faculdade/FCG/fcg_final/build/CMakeFiles/main.dir
-/home/joao/faculdade/FCG/fcg_final/build/CMakeFiles/run.dir
-/home/joao/faculdade/FCG/fcg_final/build/CMakeFiles/edit_cache.dir
-/home/joao/faculdade/FCG/fcg_final/build/CMakeFiles/rebuild_cache.dir
