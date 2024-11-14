@@ -4,7 +4,6 @@
 # pelos alunos Luis Melo e Santiago Gonzaga em 2023/1.
 
 
-# Inclua o caminho para o tinyobjloader
 set(TINYOBJLOADER_DIR ${PROJECT_SOURCE_DIR} lib/tinyobjloader)
 
 # Arquivos fonte C/C++. Inclua nesta lista todos os arquivos que devem
