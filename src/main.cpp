@@ -205,6 +205,7 @@ int main()
     // para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
     //
     LoadShadersFromFiles();
+
     LoadSkyboxShaders();
 
     // Construímos a representação de um triângulo
@@ -494,13 +495,19 @@ int main()
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);
 
+        glDepthFunc(GL_LEQUAL);
+
         glUseProgram(g_SkyboxGpuProgramID);
+        glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+        glDepthFunc(GL_LESS);
 
         // O framebuffer onde OpenGL executa as operações de renderização não
         // é o mesmo que está sendo mostrado para o usuário, caso contrário
@@ -582,17 +589,9 @@ GLuint BuildSkybox()
 
 GLuint LoadCubemapTexture(const std::string cubemap_faces[6])
 {
-    unsigned int cubemap_texture;
+    GLuint cubemap_texture;
     glGenTextures(1, &cubemap_texture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // These are very important to prevent seams
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    // This might help with seams on some systems
-    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     // Cycles through all the textures and attaches them to the cubemap object
     for (unsigned int i = 0; i < 6; i++)
@@ -622,6 +621,15 @@ GLuint LoadCubemapTexture(const std::string cubemap_faces[6])
             stbi_image_free(data);
         }
     }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // These are very important to prevent seams
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // This might help with seams on some systems
+    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     
     return cubemap_texture;
 }
