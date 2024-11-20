@@ -18,13 +18,14 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-
+#include "Camera.hpp"
 // Headers abaixo são específicos de C++
 #include <map>
 #include <string>
 #include <limits>
 #include <fstream>
 #include <sstream>
+#include<iostream>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>   // Criação de contexto OpenGL 3.3
@@ -36,6 +37,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // Headers locais, definidos na pasta "include/"
+#include "glm/ext/vector_float4.hpp"
 #include "utils.h"
 #include "matrices.h"
 #include<tiny_obj_loader.h>
@@ -123,8 +125,14 @@ bool g_ShowInfoText = true;
 // Variáveis que definem um programa de GPU (shaders). Veja função LoadShadersFromFiles().
 GLuint g_GpuProgramID = 0;
 
+Camera the_camera = Camera(glm::vec4(0.0f, 0.0f, 2.5f, 1.0f));
+
 int main()
 {
+    the_camera.set_up_vector(glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
+    the_camera.look_at(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    the_camera.set_matrix_view();
+
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
     // sistema operacional, onde poderemos renderizar com OpenGL.
     int success = glfwInit();
@@ -219,6 +227,7 @@ int main()
     glm::mat4 the_model;
     glm::mat4 the_view;
 
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -248,21 +257,25 @@ int main()
         // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
         // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
         // e ScrollCallback().
-        float r = g_CameraDistance;
-        float y = r*sin(g_CameraPhi);
-        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
+        /*float r = g_CameraDistance;*/
+        /*float y = r*sin(g_CameraPhi);*/
+        /*float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);*/
+        /*float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);*/
 
         // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
         // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        /*glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera*/
+        /*glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando*/
+        /*glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada*/
+        /*glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)*/
+        
+        the_camera.update();
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+        /*glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);*/
+        glm::mat4 view = the_camera.get_matrix_view();
+        
 
         // Agora computamos a matriz de Projeção.
         glm::mat4 projection;
@@ -983,6 +996,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     // Atualizamos parâmetros da câmera com os deslocamentos
     g_CameraTheta -= 0.01f*dx;
     g_CameraPhi   += 0.01f*dy;
+    
 
     // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
     float phimax = 3.141592f/2;
@@ -994,6 +1008,7 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     if (g_CameraPhi < phimin)
         g_CameraPhi = phimin;
 
+    the_camera.set_spherical_coordinates(g_CameraTheta, g_CameraPhi, g_CameraDistance);
     // Atualizamos as variáveis globais para armazenar a posição atual do
     // cursor como sendo a última posição conhecida do cursor.
     g_LastCursorPosX = xpos;
@@ -1013,8 +1028,11 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     // nunca pode ser zero. Versões anteriores deste código possuíam este bug,
     // o qual foi detectado pelo aluno Vinicius Fraga (2017/2).
     const float verysmallnumber = std::numeric_limits<float>::epsilon();
-    if (g_CameraDistance < verysmallnumber)
-        g_CameraDistance = verysmallnumber;
+    if (g_CameraDistance < verysmallnumber){
+        g_CameraDistance = verysmallnumber;}
+    SphericalCoordinates camera_coords=the_camera.get_spherical_coordinates();
+    the_camera.set_spherical_coordinates(camera_coords.Theta, camera_coords.Phi, g_CameraDistance);
+
 }
 
 // Definição da função que será chamada sempre que o usuário pressionar alguma

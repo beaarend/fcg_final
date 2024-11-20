@@ -13,6 +13,8 @@ set(SOURCES
   src/textrendering.cpp
   src/glad.c
   src/tiny_obj_loader.cc
+  src/matrices.cpp
+  src/Camera.cpp
 )
 
 
