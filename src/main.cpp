@@ -41,6 +41,9 @@
 #include "utils.h"
 #include "matrices.h"
 #include<tiny_obj_loader.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // Declaração de várias funções utilizadas em main().  Essas estão definidas
 // logo após a definição de main() neste arquivo.
 GLuint BuildTriangles(); // Constrói triângulos para renderização
@@ -123,6 +126,11 @@ bool g_ShowInfoText = true;
 GLuint g_GpuProgramID = 0;
 
 Camera the_camera = Camera(glm::vec4(0.0f, 0.0f, 2.5f, 1.0f)); //inicia a camera na posicao (0,0,2.5)
+GLuint g_SkyboxGpuProgramID = 0;
+
+GLuint BuildSkybox();
+GLuint LoadCubemapTexture(const std::string cubemap_faces[]);
+void LoadSkyboxShaders();
 
 int main()
 {
@@ -201,8 +209,25 @@ int main()
     //
     LoadShadersFromFiles();
 
+    LoadSkyboxShaders();
+
     // Construímos a representação de um triângulo
     GLuint vertex_array_object_id = BuildTriangles();
+    GLuint skyboxVAO = BuildSkybox();
+
+    // All the faces of the cubemap (make sure they are in this exact order)
+    std::string cubemap_faces[6] =
+    {
+        "../../resources/skybox/right.jpg",
+        "../../resources/skybox/left.jpg",
+        "../../resources/skybox/top.jpg",
+        "../../resources/skybox/bottom.jpg",
+        "../../resources/skybox/front.jpg",
+        "../../resources/skybox/back.jpg"
+    };
+
+    // Call the function to load the cubemap
+    GLuint cubemap_texture = LoadCubemapTexture(cubemap_faces);
 
     // Inicializamos o código para renderização de texto.
     TextRendering_Init();
@@ -244,6 +269,7 @@ int main()
 
         // Pedimos para a GPU utilizar o programa de GPU criado acima (contendo
         // os shaders de vértice e fragmentos).
+
         glUseProgram(g_GpuProgramID);
 
         // "Ligamos" o VAO. Informamos que queremos utilizar os atributos de
@@ -463,6 +489,20 @@ int main()
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);
 
+        glDepthFunc(GL_LEQUAL);
+
+        glUseProgram(g_SkyboxGpuProgramID);
+        glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+        glBindVertexArray(skyboxVAO);
+		glActiveTexture(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+        glDepthFunc(GL_LESS);
+
         // O framebuffer onde OpenGL executa as operações de renderização não
         // é o mesmo que está sendo mostrado para o usuário, caso contrário
         // seria possível ver artefatos conhecidos como "screen tearing". A
@@ -483,6 +523,122 @@ int main()
 
     // Fim do programa
     return 0;
+}
+
+GLuint BuildSkybox()
+{
+    float skyboxVertices[] =
+    {
+        //   Coordinates
+        -1.0f, -1.0f,  1.0f,//        7--------6
+        1.0f, -1.0f,  1.0f,//       /|       /|
+        1.0f, -1.0f, -1.0f,//      4--------5 |
+        -1.0f, -1.0f, -1.0f,//      | |      | |
+        -1.0f,  1.0f,  1.0f,//      | 3------|-2
+        1.0f,  1.0f,  1.0f,//      |/       |/
+        1.0f,  1.0f, -1.0f,//      0--------1
+        -1.0f,  1.0f, -1.0f
+    };
+
+    unsigned int skyboxIndices[] =
+    {
+        // Right
+        1, 2, 6,
+        6, 5, 1,
+        // Left
+        0, 4, 7,
+        7, 3, 0,
+        // Top
+        4, 5, 6,
+        6, 7, 4,
+        // Bottom
+        0, 3, 2,
+        2, 1, 0,
+        // Back
+        0, 1, 5,
+        5, 4, 0,
+        // Front
+        3, 7, 6,
+        6, 2, 3
+    };
+
+    // Create VAO, VBO, and EBO for the skybox
+	GLuint skyboxVAO, skyboxVBO, skyboxEBO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glGenBuffers(1, &skyboxEBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyboxEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    return skyboxVAO;
+}
+
+GLuint LoadCubemapTexture(const std::string cubemap_faces[6])
+{
+    GLuint cubemap_texture;
+    glGenTextures(1, &cubemap_texture);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
+
+    // Cycles through all the textures and attaches them to the cubemap object
+    for (unsigned int i = 0; i < 6; i++)
+    {
+        int width, height, nrChannels;
+        stbi_set_flip_vertically_on_load(false);
+        unsigned char* data = stbi_load(cubemap_faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D
+            (
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0,
+                GL_RGB,
+                width,
+                height,
+                0,
+                GL_RGB,
+                GL_UNSIGNED_BYTE,
+                data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Failed to load texture: " << cubemap_faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // These are very important to prevent seams
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    // This might help with seams on some systems
+    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    
+    return cubemap_texture;
+}
+
+void LoadSkyboxShaders()
+{
+    GLuint skybox_vertex_shader_id = LoadShader_Vertex("../../resources/shaders/skybox_vertex.glsl");
+    GLuint skybox_fragment_shader_id = LoadShader_Fragment("../../resources/shaders/skybox_fragment.glsl");
+
+    // Delete the previous skybox shader program if it exists
+    if (g_SkyboxGpuProgramID != 0)
+        glDeleteProgram(g_SkyboxGpuProgramID);
+
+    // Create a new GPU program using the loaded skybox shaders
+    g_SkyboxGpuProgramID = CreateGpuProgram(skybox_vertex_shader_id, skybox_fragment_shader_id);
 }
 
 // Constrói triângulos para futura renderização
@@ -836,26 +992,8 @@ void LoadShader(const char* filename, GLuint shader_id)
 //
 void LoadShadersFromFiles()
 {
-    // Note que o caminho para os arquivos "shader_vertex.glsl" e
-    // "shader_fragment.glsl" estão fixados, sendo que assumimos a existência
-    // da seguinte estrutura no sistema de arquivos:
-    //
-    //    + FCG_Lab_01/
-    //    |
-    //    +--+ bin/
-    //    |  |
-    //    |  +--+ Release/  (ou Debug/ ou Linux/)
-    //    |     |
-    //    |     o-- main.exe
-    //    |
-    //    +--+ src/
-    //       |
-    //       o-- shader_vertex.glsl
-    //       |
-    //       o-- shader_fragment.glsl
-    //
-    GLuint vertex_shader_id = LoadShader_Vertex("../../src/shader_vertex.glsl");
-    GLuint fragment_shader_id = LoadShader_Fragment("../../src/shader_fragment.glsl");
+    GLuint vertex_shader_id = LoadShader_Vertex("../../resources/shaders/shader_vertex.glsl");
+    GLuint fragment_shader_id = LoadShader_Fragment("../../resources/shaders/shader_fragment.glsl");
 
     // Deletamos o programa de GPU anterior, caso ele exista.
     if ( g_GpuProgramID != 0 )
