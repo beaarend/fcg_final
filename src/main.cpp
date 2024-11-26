@@ -15,7 +15,6 @@
 //  vira
 //    #include <cstdio> // Em C++
 //
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 
@@ -29,7 +28,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-#include <iostream>
 
 // Headers das bibliotecas OpenGL
 #include <glad/glad.h>   // Criação de contexto OpenGL 3.3
@@ -43,14 +41,9 @@
 // Headers da biblioteca para carregar modelos obj
 #include <tiny_obj_loader.h>
 
-// Headers da biblioteca para criar a Skybox
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
 // Headers locais, definidos na pasta "include/"
 #include "utils.h"
 #include "matrices.h"
-
 
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
@@ -220,12 +213,6 @@ GLint g_view_uniform;
 GLint g_projection_uniform;
 GLint g_object_id_uniform;
 
-// SKYBOX FUNCTIONS
-GLuint g_SkyboxGpuProgramID = 0;
-GLuint BuildSkybox();
-GLuint LoadCubemapTexture(const std::string cubemap_faces[]);
-void LoadSkyboxShaders();
-
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -255,7 +242,7 @@ int main(int argc, char* argv[])
     // Criamos uma janela do sistema operacional, com 800 colunas e 600 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow* window;
-    window = glfwCreateWindow(800, 600, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "INF01047 - 00341793 - Diego Hommerding Amorim", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -298,30 +285,6 @@ int main(int argc, char* argv[])
     // para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
     //
     LoadShadersFromFiles();
-
-    // SKYBOX CODE STARTS
-
-    LoadSkyboxShaders();
-
-    GLuint skyboxVAO = BuildSkybox();
-
-    std::string cubemap_faces[6] =
-    {
-        "../../resources/skybox/right.jpg",
-        "../../resources/skybox/left.jpg",
-        "../../resources/skybox/top.jpg",
-        "../../resources/skybox/bottom.jpg",
-        "../../resources/skybox/front.jpg",
-        "../../resources/skybox/back.jpg"
-    };
-
-    GLuint cubemap_texture = LoadCubemapTexture(cubemap_faces);
-
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glFrontFace(GL_CCW);
-
-    // SKYBOX CODE ENDS
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spheremodel("../../resources/objects/sphere.obj");
@@ -450,6 +413,16 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, BUNNY);
         DrawVirtualObject("the_bunny");
 
+        // Desenhamos o modelo do plano (chão)
+        model = Matrix_Scale(2.0, 1.0, 2.0)
+            * Matrix_Translate(0.0f, -1.0f, 0.0f)
+            * Matrix_Rotate_Z(g_AngleZ)
+            * Matrix_Rotate_Y(g_AngleY)
+            * Matrix_Rotate_X(g_AngleX);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, PLANE);
+        DrawVirtualObject("the_plane");
+
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -461,22 +434,6 @@ int main(int argc, char* argv[])
         // Imprimimos na tela informação sobre o número de quadros renderizados
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);
-
-        // SKYBOX CODE STARTS
-        glDepthFunc(GL_LEQUAL);
-
-        glUseProgram(g_SkyboxGpuProgramID);
-        glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(g_SkyboxGpuProgramID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-        glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-
-        glDepthFunc(GL_LESS);
-        // SKYBOX CODE ENDS
 
         // O framebuffer onde OpenGL executa as operações de renderização não
         // é o mesmo que está sendo mostrado para o usuário, caso contrário
@@ -498,108 +455,6 @@ int main(int argc, char* argv[])
 
     // Fim do programa
     return 0;
-}
-
-GLuint BuildSkybox()
-{
-    float skyboxVertices[] =
-    {
-        -1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f,  1.0f,
-        1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  1.0f,
-        1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f
-    };
-
-    unsigned int skyboxIndices[] =
-    {
-        1, 2, 6,
-        6, 5, 1,
-        0, 4, 7,
-        7, 3, 0,
-        4, 5, 6,
-        6, 7, 4,
-        0, 3, 2,
-        2, 1, 0,
-        0, 1, 5,
-        5, 4, 0,
-        3, 7, 6,
-        6, 2, 3
-    };
-
-	GLuint skyboxVAO, skyboxVBO, skyboxEBO;
-	glGenVertexArrays(1, &skyboxVAO);
-	glGenBuffers(1, &skyboxVBO);
-	glGenBuffers(1, &skyboxEBO);
-	glBindVertexArray(skyboxVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skyboxEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(skyboxIndices), &skyboxIndices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    return skyboxVAO;
-}
-
-GLuint LoadCubemapTexture(const std::string cubemap_faces[6])
-{
-    unsigned int cubemap_texture;
-	glGenTextures(1, &cubemap_texture);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap_texture);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
-	for (unsigned int i = 0; i < 6; i++)
-	{   
-		int width, height, nrChannels;
-        stbi_set_flip_vertically_on_load(false);
-		unsigned char* data = stbi_load(cubemap_faces[i].c_str(), &width, &height, &nrChannels, 0);
-		if (data)
-		{
-			glTexImage2D
-			(
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0,
-				GL_RGB,
-				width,
-				height,
-				0,
-				GL_RGB,
-				GL_UNSIGNED_BYTE,
-				data
-			);
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Failed to load texture: " << cubemap_faces[i] << std::endl;
-			stbi_image_free(data);
-		}
-	}
-    
-    return cubemap_texture;
-}
-
-void LoadSkyboxShaders()
-{
-    GLuint skybox_vertex_shader_id = LoadShader_Vertex("../../resources/shaders/skybox_vertex.glsl");
-    GLuint skybox_fragment_shader_id = LoadShader_Fragment("../../resources/shaders/skybox_fragment.glsl");
-
-    if (g_SkyboxGpuProgramID != 0)
-        glDeleteProgram(g_SkyboxGpuProgramID);
-
-    g_SkyboxGpuProgramID = CreateGpuProgram(skybox_vertex_shader_id, skybox_fragment_shader_id);
 }
 
 // Função que desenha um objeto armazenado em g_VirtualScene. Veja definição
@@ -630,27 +485,8 @@ void DrawVirtualObject(const char* object_name)
 
 // Função que carrega os shaders de vértices e de fragmentos que serão
 // utilizados para renderização. Veja slides 180-200 do documento Aula_03_Rendering_Pipeline_Grafico.pdf.
-//
 void LoadShadersFromFiles()
 {
-    // Note que o caminho para os arquivos "shader_vertex.glsl" e
-    // "shader_fragment.glsl" estão fixados, sendo que assumimos a existência
-    // da seguinte estrutura no sistema de arquivos:
-    //
-    //    + FCG_Lab_01/
-    //    |
-    //    +--+ bin/
-    //    |  |
-    //    |  +--+ Release/  (ou Debug/ ou Linux/)
-    //    |     |
-    //    |     o-- main.exe
-    //    |
-    //    +--+ src/
-    //       |
-    //       o-- shader_vertex.glsl
-    //       |
-    //       o-- shader_fragment.glsl
-    //
     GLuint vertex_shader_id = LoadShader_Vertex("../../resources/shaders/shader_vertex.glsl");
     GLuint fragment_shader_id = LoadShader_Fragment("../../resources/shaders/shader_fragment.glsl");
 
@@ -731,7 +567,7 @@ void ComputeNormals(ObjModel* model)
 
             // PREENCHA AQUI o cálculo da normal de um triângulo cujos vértices
             // estão nos pontos "a", "b", e "c", definidos no sentido anti-horário.
-            const glm::vec4  n = glm::vec4(0.0f,0.0f,0.0f,0.0f);
+            const glm::vec4  n = crossproduct((b - a), (c - a));
 
             for (size_t vertex = 0; vertex < 3; ++vertex)
             {
@@ -1201,13 +1037,13 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 // tecla do teclado. Veja http://www.glfw.org/docs/latest/input_guide.html#input_key
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 {
-    // =====================
+    // ====================
     // Não modifique este loop! Ele é utilizando para correção automatizada dos
     // laboratórios. Deve ser sempre o primeiro comando desta função KeyCallback().
     for (int i = 0; i < 10; ++i)
         if (key == GLFW_KEY_0 + i && action == GLFW_PRESS && mod == GLFW_MOD_SHIFT)
             std::exit(100 + i);
-    // =====================
+    // ====================
 
     // Se o usuário pressionar a tecla ESC, fechamos a janela.
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
