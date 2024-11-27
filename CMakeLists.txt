@@ -15,6 +15,7 @@ set(SOURCES
   src/tiny_obj_loader.cc
   src/matrices.cpp
   src/Camera.cpp
+  src/SceneObject.cpp
 )
 
 
