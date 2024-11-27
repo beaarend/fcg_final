@@ -359,7 +359,9 @@ int main(int argc, char* argv[])
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+
+        //glm::mat4 view = Matrix_Camera_View(camera_position_c, camera_view_vector, camera_up_vector);
+         glm::mat4 view = Matrices::CameraView(camera_position_c, camera_view_vector, camera_up_vector);
 
         // Agora computamos a matriz de Projeção.
         glm::mat4 projection;
@@ -374,7 +376,9 @@ int main(int argc, char* argv[])
             // Projeção Perspectiva.
             // Para definição do field of view (FOV), veja slides 205-215 do documento Aula_09_Projecoes.pdf.
             float field_of_view = 3.141592 / 3.0f;
-            projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+            //projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+
+            projection = Matrices::Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
         }
         else
         {
@@ -383,14 +387,15 @@ int main(int argc, char* argv[])
             // PARA PROJEÇÃO ORTOGRÁFICA veja slides 219-224 do documento Aula_09_Projecoes.pdf.
             // Para simular um "zoom" ortográfico, computamos o valor de "t"
             // utilizando a variável g_CameraDistance.
+            
             float t = 1.5f*g_CameraDistance/2.5f;
             float b = -t;
             float r = t*g_ScreenRatio;
             float l = -r;
-            projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
+            projection = Matrices::Orthographic(l, r, b, t, nearplane, farplane);
         }
 
-        glm::mat4 model = Matrix_Identity(); // Transformação identidade de modelagem
+        glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
 
         // Enviamos as matrizes "view" e "projection" para a placa de vídeo
         // (GPU). Veja o arquivo "shader_vertex.glsl", onde estas são
@@ -403,28 +408,30 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f);
+        model = Matrices::Translate(-1.0f,0.0f,0.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
         /*DrawVirtualObject("the_sphere");*/
         sphereObject.render();
 
         // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f)
-              * Matrix_Rotate_Z(g_AngleZ)
-              * Matrix_Rotate_Y(g_AngleY)
-              * Matrix_Rotate_X(g_AngleX);
+
+        model = Matrices::Translate(1.0f,0.0f,0.0f)
+              * Matrices::RotateZ(g_AngleZ)
+              * Matrices::RotateY(g_AngleY)
+              * Matrices::RotateX(g_AngleX);
+
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
         /*DrawVirtualObject("the_bunny");*/
         bunnyObject.render();
 
         // Desenhamos o modelo do plano (chão)
-        model = Matrix_Scale(2.0, 1.0, 2.0)
-            * Matrix_Translate(0.0f, -1.0f, 0.0f)
-            * Matrix_Rotate_Z(g_AngleZ)
-            * Matrix_Rotate_Y(g_AngleY)
-            * Matrix_Rotate_X(g_AngleX);
+        model = Matrices::Scale(2.0, 1.0, 2.0)
+              * Matrices::Translate(0.0f, -1.0f, 0.0f)
+              * Matrices::RotateZ(g_AngleZ)
+              * Matrices::RotateY(g_AngleY)
+              * Matrices::RotateX(g_AngleX);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
         /*DrawVirtualObject("the_plane");*/
@@ -524,7 +531,8 @@ void PopMatrix(glm::mat4& M)
 {
     if ( g_MatrixStack.empty() )
     {
-        M = Matrix_Identity();
+        //M = Matrix_Identity();
+        M = Matrices::Identity();
     }
     else
     {
@@ -574,7 +582,8 @@ void ComputeNormals(ObjModel* model)
 
             // PREENCHA AQUI o cálculo da normal de um triângulo cujos vértices
             // estão nos pontos "a", "b", e "c", definidos no sentido anti-horário.
-            const glm::vec4  n = crossproduct((b - a), (c - a));
+            //const glm::vec4  n = crossproduct((b - a), (c - a));
+            const glm::vec4 n = Matrices::CrossProduct((b - a), (c - a));
 
             for (size_t vertex = 0; vertex < 3; ++vertex)
             {
@@ -591,7 +600,7 @@ void ComputeNormals(ObjModel* model)
     for (size_t i = 0; i < vertex_normals.size(); ++i)
     {
         glm::vec4 n = vertex_normals[i] / (float)num_triangles_per_vertex[i];
-        n /= norm(n);
+        n /= Matrices::Norm(n);
         model->attrib.normals[3*i + 0] = n.x;
         model->attrib.normals[3*i + 1] = n.y;
         model->attrib.normals[3*i + 2] = n.z;
@@ -1172,7 +1181,7 @@ void TextRendering_ShowModelViewProjection(
     glm::vec2 p = glm::vec2( 0,  0);
     glm::vec2 q = glm::vec2(width, height);
 
-    glm::mat4 viewport_mapping = Matrix(
+    glm::mat4 viewport_mapping = Matrices::New(
         (q.x - p.x)/(b.x-a.x), 0.0f, 0.0f, (b.x*p.x - a.x*q.x)/(b.x-a.x),
         0.0f, (q.y - p.y)/(b.y-a.y), 0.0f, (b.y*p.y - a.y*q.y)/(b.y-a.y),
         0.0f , 0.0f , 1.0f , 0.0f ,
