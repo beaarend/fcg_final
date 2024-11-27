@@ -427,13 +427,9 @@ int main(int argc, char* argv[])
             * Matrix_Rotate_X(g_AngleX);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
-<<<<<<< HEAD
         /*DrawVirtualObject("the_plane");*/
         planeObject.render();
-=======
-        DrawVirtualObject("the_plane");
 
->>>>>>> 48c617fac93c802c296822354e11465122670c9d
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
