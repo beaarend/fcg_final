@@ -220,8 +220,15 @@ GLint g_object_id_uniform;
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH 800
 
+#include "Player.hpp"
+
+
 int main(int argc, char* argv[])
 {
+
+    Player player;
+    player.Print();
+
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
     // sistema operacional, onde poderemos renderizar com OpenGL.
     int success = glfwInit();
@@ -255,10 +262,12 @@ int main(int argc, char* argv[])
         std::exit(EXIT_FAILURE);
     }
 
-    glfwSetKeyCallback(window, KeyCallback);
-    glfwSetMouseButtonCallback(window, MouseButtonCallback);
-    glfwSetCursorPosCallback(window, CursorPosCallback);
-    glfwSetScrollCallback(window, ScrollCallback);
+    glfwSetWindowUserPointer(window, &player);
+
+    glfwSetKeyCallback(window, Player::KeyCallbackStatic);
+    glfwSetMouseButtonCallback(window, Player::MouseButtonCallbackStatic);
+    glfwSetCursorPosCallback(window, Player::CursorPosCallbackStatic);
+    glfwSetScrollCallback(window, Player::ScrollCallbackStatic);
 
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
@@ -297,6 +306,9 @@ int main(int argc, char* argv[])
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
+
+    LookAtCamera lookAtCamera(g_ScreenRatio, &gpu_controller);
+    player.AddLookAtCamera(&lookAtCamera);
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -366,11 +378,9 @@ int main(int argc, char* argv[])
 
         // glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         // glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
+        
+        player.Update();
 
-        glm::vec4 position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        LookAtCamera lookAtCamera(g_ScreenRatio, &gpu_controller);
-        lookAtCamera.Update(position);
 
         glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
 

@@ -18,6 +18,11 @@ Player::Player()
 
 }
 
+void Player::Print()
+{
+    std::cout << "Player position: " << this->position.x << " " << this->position.y << " " << this->position.z << std::endl;
+}
+
 void Player::AddLookAtCamera(LookAtCamera *look_at_camera)
 {
     this->look_at_camera = look_at_camera;
@@ -27,13 +32,13 @@ void Player::UpdatePosition()
 {
     // create the function that when the player press the key, the player moves
     if (this->pressing_W)
-        this->position.x += PLAYER_SPEED;
-    if (this->pressing_A)
-        this->position.z += PLAYER_SPEED;
-    if (this->pressing_S)
-        this->position.x -= PLAYER_SPEED;
-    if (this->pressing_D)
         this->position.z -= PLAYER_SPEED;
+    if (this->pressing_A)
+        this->position.x -= PLAYER_SPEED;
+    if (this->pressing_S)
+        this->position.z += PLAYER_SPEED;
+    if (this->pressing_D)
+        this->position.x += PLAYER_SPEED;
 }
 
 void Player::Update()
@@ -47,6 +52,31 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 
+    // Debug
+    std::string key_pressed = "";
+    switch (key)
+        {
+        case GLFW_KEY_W:
+            key_pressed = "W";
+            break; 
+        case GLFW_KEY_A:
+            key_pressed = "A";
+            break;
+        case GLFW_KEY_S:
+            key_pressed = "S";
+            break;
+        case GLFW_KEY_D:
+            key_pressed = "D";
+            break;
+        case GLFW_KEY_SPACE:
+            key_pressed = "SPACE";
+            break;
+        }
+    std::string action_string = "";
+    if (action == GLFW_PRESS)
+        action_string = "PRESS";
+    else if (action == GLFW_RELEASE)
+        action_string = "RELEASE";
 
     // Movement keys
     if (key == GLFW_KEY_W && action == GLFW_PRESS)
@@ -87,6 +117,8 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     {
         this->pressing_Space = true;
     }
+
+    std::cout << "Key: " << key_pressed << " | " << "Action: " << action_string << std::endl;
     
 }
 
@@ -127,22 +159,44 @@ void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
     }
 }
 
-// // Função callback chamada sempre que o usuário movimenta a "rodinha" do mouse.
-// void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-// {
-//     // Atualizamos a distância da câmera para a origem utilizando a
-//     // movimentação da "rodinha", simulando um ZOOM.
-//     g_CameraDistance -= 0.1f*yoffset;
+void Player::ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    float zoom_delta = 0.1f * yoffset;
 
-//     // Uma câmera look-at nunca pode estar exatamente "em cima" do ponto para
-//     // onde ela está olhando, pois isto gera problemas de divisão por zero na
-//     // definição do sistema de coordenadas da câmera. Isto é, a variável abaixo
-//     // nunca pode ser zero. Versões anteriores deste código possuíam este bug,
-//     // o qual foi detectado pelo aluno Vinicius Fraga (2017/2).
-//     const float verysmallnumber = std::numeric_limits<float>::epsilon();
-//     if (g_CameraDistance < verysmallnumber)
-//         g_CameraDistance = verysmallnumber;
-// }
+    const float verysmallnumber = std::numeric_limits<float>::epsilon();
+    if (this->look_at_camera->distance - zoom_delta >= verysmallnumber)
+        this->look_at_camera->distance -= zoom_delta;
+}
+
+void Player::KeyCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+    if (player)
+        player->KeyCallback(window, key, scancode, action, mods);
+}
+
+void Player::MouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods)
+{
+    Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+    if (player)
+        player->MouseButtonCallback(window, button, action, mods);
+}
+
+void Player::CursorPosCallbackStatic(GLFWwindow* window, double xpos, double ypos)
+{
+    Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+    if (player)
+        player->CursorPosCallback(window, xpos, ypos);
+}
+
+void Player::ScrollCallbackStatic(GLFWwindow *window, double xoffset, double yoffset)
+{
+    Player* player = static_cast<Player*>(glfwGetWindowUserPointer(window));
+    if (player)
+        player->ScrollCallback(window, xoffset, yoffset);
+}
+
+
 
 
 
