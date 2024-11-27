@@ -16,6 +16,9 @@ set(SOURCES
   src/matrices.cpp
   src/Camera.cpp
   src/SceneObject.cpp
+  src/gpuProgramController.cpp
+  src/lookAtCamera.cpp
+  src/Player.cpp
 )
 
 

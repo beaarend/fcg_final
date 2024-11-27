@@ -36,7 +36,7 @@ void SceneObject::ComputeNormals()
             const glm::vec4 b = vertices[1];
             const glm::vec4 c = vertices[2];
 
-            const glm::vec4 n = crossproduct(b - a, c - a);
+            const glm::vec4 n = Matrices::CrossProduct(b - a, c - a);
 
             for (size_t vertex = 0; vertex < 3; ++vertex)
             {
@@ -53,7 +53,7 @@ void SceneObject::ComputeNormals()
     for (size_t i = 0; i < vertex_normals.size(); ++i)
     {
         glm::vec4 n = vertex_normals[i] / (float)num_triangles_per_vertex[i];
-        n /= norm(n);
+        n /= Matrices::Norm(n);
         attrib.normals[3 * i + 0] = n.x;
         attrib.normals[3 * i + 1] = n.y;
         attrib.normals[3 * i + 2] = n.z;

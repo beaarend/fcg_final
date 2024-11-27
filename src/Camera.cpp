@@ -35,16 +35,16 @@ void Camera::set_matrix_view(){
     /*PrintVector(up_vector);*/
 
     glm::vec4 w = -view_vector;
-    glm::vec4 u = crossproduct(up_vector, w);
+    glm::vec4 u = Matrices::CrossProduct(up_vector, w);
 
     // Normalizamos os vetores u e w
-    w = w / norm(w);
-    u = u / norm(u);
+    w = w / Matrices::Norm(w);
+    u = u / Matrices::Norm(u);
 
     /*PrintVector(w);*/
     /*PrintVector(u);*/
 
-    glm::vec4 v = crossproduct(w, u);
+    glm::vec4 v = Matrices::CrossProduct(w, u);
 
     glm::vec4 origin_o = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 vector_c = position_c - origin_o;
@@ -59,10 +59,10 @@ void Camera::set_matrix_view(){
     float wy = w.y;
     float wz = w.z;
 
-    this->camera_view_matrix = Matrix(
-        ux  , uy  , uz  , dotproduct(-u, vector_c),  // LINHA 1
-        vx  , vy  , vz  , dotproduct(-v, vector_c),  // LINHA 2
-        wx  , wy  , wz  , dotproduct(-w, vector_c),  // LINHA 3
+    this->camera_view_matrix = Matrices::New(
+        ux  , uy  , uz  , Matrices::DotProduct(-u, vector_c),  // LINHA 1
+        vx  , vy  , vz  , Matrices::DotProduct(-v, vector_c),  // LINHA 2
+        wx  , wy  , wz  , Matrices::DotProduct(-w, vector_c),  // LINHA 3
         0.0f, 0.0f, 0.0f, 1.0f                       // LINHA 4
   );
 
