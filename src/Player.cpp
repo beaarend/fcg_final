@@ -36,21 +36,21 @@ void Player::AddFreeCamera(FreeCamera *free_camera)
     this->free_camera = free_camera;
 }
 
-void Player::UpdatePosition()
+void Player::UpdatePosition(float delta_time)
 {
     if (this->pressing_W)
-        this->position.z -= PLAYER_SPEED;
+        this->position.z -= PLAYER_SPEED * delta_time;
     if (this->pressing_A)
-        this->position.x -= PLAYER_SPEED;
+        this->position.x -= PLAYER_SPEED * delta_time;
     if (this->pressing_S)
-        this->position.z += PLAYER_SPEED;
+        this->position.z += PLAYER_SPEED * delta_time;
     if (this->pressing_D)
-        this->position.x += PLAYER_SPEED;
+        this->position.x += PLAYER_SPEED * delta_time;
 
     
     if (this->is_jumping)
     {
-        this->position.y += this->jump_velocity;
+        this->position.y += this->jump_velocity * delta_time;
         this->jump_velocity -= GRAVITY;
         if (this->position.y <= 0.0f)
         {
@@ -59,13 +59,13 @@ void Player::UpdatePosition()
         }
     }
 
-    // TODO: Colisão com objetos e com o chão
+    // TODO: Colisão com objetos e com o chão (tecnicamente pronto com o if de cima ali mas né)
 }
 
-void Player::Update()
+void Player::Update(float delta_time)
 {   
-    this->UpdatePosition();
-    // TODO: add head_movement
+    this->UpdatePosition(delta_time);
+    // TODO: add head_movement ???? free é 1a pessoa e look at é 3a
 
     switch(this->camera_mode)
     {

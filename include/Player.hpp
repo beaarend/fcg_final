@@ -25,11 +25,11 @@ class Player
 private:
     CameraMode camera_mode;
 
-    const float PLAYER_SPEED = 0.1f;
-    const float GRAVITY = 0.010f;
-    const float JUMP_STRENGHT = 0.15f;
+    const float PLAYER_SPEED = 3.0f;
+    const float GRAVITY = 0.1f;
+    const float JUMP_STRENGHT = 2.5f;
 
-    void UpdatePosition();
+    void UpdatePosition(float delta_time);
 
     // Keys
     bool pressing_W;
@@ -47,7 +47,7 @@ private:
     
 public:
     Player();
-    void Update();
+    void Update(float delta_time);
     void Print();
     glm::vec4 position;
 
