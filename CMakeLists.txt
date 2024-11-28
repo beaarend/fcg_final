@@ -15,12 +15,13 @@ set(SOURCES
   src/tiny_obj_loader.cc
   src/matrices.cpp
   src/Camera.cpp
-  src/SceneObject.cpp
 
+  src/SceneObject.cpp               # Objetos da cena   
   src/gpuProgramController.cpp      # Shaders
   src/lookAtCamera.cpp              # Câmera
   src/freeCamera.cpp                # Câmera
-  src/Player.cpp                    # Jogador e callbacks         
+  src/Player.cpp                    # Jogador e callbacks  
+  src/Collisions.cpp                # Colisões       
 )
 
 

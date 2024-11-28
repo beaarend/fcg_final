@@ -7,7 +7,7 @@ LookAtCamera::LookAtCamera(float screen_ratio, GpuProgramController *gpu_control
 
     this->view_angle_theta = 0.0f;
     this->view_angle_phi = 0.5f;
-    this->distance = 5.5f;
+    this->distance = 10.5f;
     this->screen_ratio = screen_ratio;
 }
 

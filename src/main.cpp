@@ -222,6 +222,10 @@ GLint g_object_id_uniform;
 
 #include "Player.hpp"
 
+float ramp_angle_x = 0.0f;
+float ramp_angle_y = 0.0f;
+float ramp_angle_z = -5.0f;
+
 int main(int argc, char* argv[])
 {
 
@@ -341,8 +345,11 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         // Trying to make the sphere move
+        // -> when animating an object according to the camera, put the translate first
         glm::vec4 playerPosition = player.position;
-        model = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        model = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z)
+              * Matrices::Translate(0.0f, -0.5f, 0.0f)
+              * Matrices::Scale(0.5f, 0.5f, 0.5f);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
         sphereObject.render();
@@ -355,18 +362,16 @@ int main(int argc, char* argv[])
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, BUNNY);
-        /*DrawVirtualObject("the_bunny");*/
         bunnyObject.render();
 
         // Desenhamos o modelo do plano (chão)
-        model = Matrices::Scale(2.0, 1.0, 2.0)
-              * Matrices::Translate(0.0f, -1.0f, 0.0f)
-              * Matrices::RotateZ(g_AngleZ)
-              * Matrices::RotateY(g_AngleY)
-              * Matrices::RotateX(g_AngleX);
+        model = Matrices::Scale(10.0f, 0.5f, 10.0f)
+              * Matrices::Translate(0.0f, -1.0f, -0.5f)
+              * Matrices::RotateZ(ramp_angle_x)
+              * Matrices::RotateY(ramp_angle_y)
+              * Matrices::RotateX(ramp_angle_z);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
-        /*DrawVirtualObject("the_plane");*/
         planeObject.render();
 
 
