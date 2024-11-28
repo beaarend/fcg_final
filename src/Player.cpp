@@ -13,6 +13,8 @@ Player::Player()
     this->pressing_D = false;
 
     this->pressing_Space = false;
+    this->is_jumping = false;
+    this->jump_velocity = 0.0f;
 
     this->cursorPosX = 0.0f;
     this->cursorPosY = 0.0f;   
@@ -39,13 +41,24 @@ void Player::UpdatePosition()
     if (this->pressing_W)
         this->position.z -= PLAYER_SPEED;
     if (this->pressing_A)
-        this->position.x += PLAYER_SPEED;
+        this->position.x -= PLAYER_SPEED;
     if (this->pressing_S)
         this->position.z += PLAYER_SPEED;
     if (this->pressing_D)
-        this->position.x -= PLAYER_SPEED;
+        this->position.x += PLAYER_SPEED;
 
-    // TODO: Implementar pulo
+    
+    if (this->is_jumping)
+    {
+        this->position.y += this->jump_velocity;
+        this->jump_velocity -= GRAVITY;
+        if (this->position.y <= 0.0f)
+        {
+            this->position.y = 0.0f;
+            this->is_jumping = false;
+        }
+    }
+
     // TODO: Colisão com objetos e com o chão
 }
 
@@ -134,7 +147,11 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
     {
         this->pressing_Space = true;
+        this->is_jumping = true;
+        this->jump_velocity = JUMP_STRENGHT;
     }
+
+    // Change cameras
 
     std::cout << "Key: " << key_pressed << " | " << "Action: " << action_string << std::endl;
     
@@ -155,6 +172,8 @@ void Player::MouseButtonCallback(GLFWwindow *window, int button, int action, int
 
 void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
+    //TODO: change values here cause its too fast
+
     float dx = xpos - this->cursorPosX;
     float dy = ypos - this->cursorPosY;
 
@@ -166,8 +185,8 @@ void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
     case CameraMode::LookAt:
         if (this->pressing_LeftButton)
         {
-            this->look_at_camera->view_angle_theta -= 0.01f * dx;
-            this->look_at_camera->view_angle_phi += 0.01f * dy;
+            this->look_at_camera->view_angle_theta -= 0.001f * dx;
+            this->look_at_camera->view_angle_phi += 0.001f * dy;
 
             if (this->look_at_camera->view_angle_phi > phimax)
                 this->look_at_camera->view_angle_phi = phimax;

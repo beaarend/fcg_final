@@ -25,8 +25,11 @@ class Player
 private:
     CameraMode camera_mode;
 
-    void UpdatePosition();
     const float PLAYER_SPEED = 0.1f;
+    const float GRAVITY = 0.010f;
+    const float JUMP_STRENGHT = 0.15f;
+
+    void UpdatePosition();
 
     // Keys
     bool pressing_W;
@@ -35,6 +38,8 @@ private:
     bool pressing_D;
 
     bool pressing_Space;
+    bool is_jumping;
+    float jump_velocity;
 
     // Mouse
     double cursorPosX, cursorPosY;
