@@ -2,6 +2,8 @@
 #define _PLAYER_H
 
 #include "lookAtCamera.h"
+#include "freeCamera.hpp"
+
 #include "matrices.h"
 #include <iostream>
 #include <string>
@@ -12,13 +14,19 @@
 // Matrices
 #include <glm/vec4.hpp>
 
+enum struct CameraMode
+{
+    Free,
+    LookAt,
+};
+
 class Player
 {
 private:
+    CameraMode camera_mode;
+
     void UpdatePosition();
     const float PLAYER_SPEED = 0.1f;
-
-    bool pressing_LeftButton;
 
     // Keys
     bool pressing_W;
@@ -28,14 +36,21 @@ private:
 
     bool pressing_Space;
 
+    // Mouse
     double cursorPosX, cursorPosY;
+    bool pressing_LeftButton;
     
 public:
     Player();
+    void Update();
+    void Print();
     glm::vec4 position;
 
     LookAtCamera *look_at_camera;
     void AddLookAtCamera(LookAtCamera *look_at_camera);
+
+    FreeCamera *free_camera;
+    void AddFreeCamera(FreeCamera *free_camera);
 
     void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
     void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
@@ -47,10 +62,6 @@ public:
     static void MouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods);
     static void CursorPosCallbackStatic(GLFWwindow* window, double xpos, double ypos);
     static void ScrollCallbackStatic(GLFWwindow *window, double xoffset, double yoffset);
-
-    void Update();
-    void Print();
-    
 };
 
 #endif // _PLAYER_H

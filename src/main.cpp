@@ -222,7 +222,6 @@ GLint g_object_id_uniform;
 
 #include "Player.hpp"
 
-
 int main(int argc, char* argv[])
 {
 
@@ -307,8 +306,14 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    // Locks mouse inside window
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     LookAtCamera lookAtCamera(g_ScreenRatio, &gpu_controller);
     player.AddLookAtCamera(&lookAtCamera);
+
+    FreeCamera freeCamera(g_ScreenRatio, &gpu_controller);
+    player.AddFreeCamera(&freeCamera);
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -389,10 +394,16 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         // Desenhamos o modelo da esfera
-        model = Matrices::Translate(-1.0f,0.0f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        // model = Matrices::Translate(-1.0f,0.0f,0.0f);
+        // glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        // glUniform1i(g_object_id_uniform, SPHERE);
+        // sphereObject.render();
+
+        // Trying to make the sphere move
+        glm::vec4 playerPosition = player.position;
+        model = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
-        /*DrawVirtualObject("the_sphere");*/
         sphereObject.render();
 
         // Desenhamos o modelo do coelho
@@ -708,7 +719,7 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel* model)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), NULL, GL_STATIC_DRAW);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(GLuint), indices.data());
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // XXX Errado!
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // 
     //
 
     // "Desligamos" o VAO, evitando assim que operações posteriores venham a

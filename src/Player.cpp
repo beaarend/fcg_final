@@ -2,6 +2,7 @@
 
 Player::Player()
 {
+    this->camera_mode = CameraMode::LookAt;
     this->position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     this->pressing_LeftButton = false;
@@ -28,23 +29,40 @@ void Player::AddLookAtCamera(LookAtCamera *look_at_camera)
     this->look_at_camera = look_at_camera;
 }
 
+void Player::AddFreeCamera(FreeCamera *free_camera)
+{
+    this->free_camera = free_camera;
+}
+
 void Player::UpdatePosition()
 {
-    // create the function that when the player press the key, the player moves
     if (this->pressing_W)
         this->position.z -= PLAYER_SPEED;
     if (this->pressing_A)
-        this->position.x -= PLAYER_SPEED;
+        this->position.x += PLAYER_SPEED;
     if (this->pressing_S)
         this->position.z += PLAYER_SPEED;
     if (this->pressing_D)
-        this->position.x += PLAYER_SPEED;
+        this->position.x -= PLAYER_SPEED;
+
+    // TODO: Implementar pulo
+    // TODO: Colisão com objetos e com o chão
 }
 
 void Player::Update()
-{
+{   
     this->UpdatePosition();
-    this->look_at_camera->Update(this->position);
+    // TODO: add head_movement
+
+    switch(this->camera_mode)
+    {
+        case CameraMode::Free:
+            this->free_camera->Update(this->position, PLAYER_SPEED/*, this->head_movement*/);
+            break;
+        case CameraMode::LookAt:
+            this->look_at_camera->Update(this->position);
+            break;
+    }
 }
 
 void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
@@ -143,19 +161,40 @@ void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
     float phimax = 3.141592f / 2;
     float phimin = -phimax;
 
-    if (this->pressing_LeftButton)
+    switch (camera_mode)
     {
-        this->look_at_camera->view_angle_theta -= 0.01f * dx;
-        this->look_at_camera->view_angle_phi += 0.01f * dy;
+    case CameraMode::LookAt:
+        if (this->pressing_LeftButton)
+        {
+            this->look_at_camera->view_angle_theta -= 0.01f * dx;
+            this->look_at_camera->view_angle_phi += 0.01f * dy;
 
-        if (this->look_at_camera->view_angle_phi > phimax)
-            this->look_at_camera->view_angle_phi = phimax;
+            if (this->look_at_camera->view_angle_phi > phimax)
+                this->look_at_camera->view_angle_phi = phimax;
 
-        if (this->look_at_camera->view_angle_phi < phimin)
-            this->look_at_camera->view_angle_phi = phimin;
+            if (this->look_at_camera->view_angle_phi < phimin)
+                this->look_at_camera->view_angle_phi = phimin;
+
+            this->cursorPosX = xpos;
+            this->cursorPosY = ypos;
+        }
+        break;
+
+    case CameraMode::Free:
+        free_camera->view_angle_theta -= 0.001f * dx;
+        free_camera->view_angle_phi -= 0.001f * dy;
+
+        if (free_camera->view_angle_phi > phimax)
+            free_camera->view_angle_phi = phimax;
+
+        if (free_camera->view_angle_phi < phimin)
+            free_camera->view_angle_phi = phimin;
 
         this->cursorPosX = xpos;
         this->cursorPosY = ypos;
+        break;
+    default:
+        break;
     }
 }
 

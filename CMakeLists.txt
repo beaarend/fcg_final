@@ -16,9 +16,11 @@ set(SOURCES
   src/matrices.cpp
   src/Camera.cpp
   src/SceneObject.cpp
-  src/gpuProgramController.cpp
-  src/lookAtCamera.cpp
-  src/Player.cpp
+
+  src/gpuProgramController.cpp      # Shaders
+  src/lookAtCamera.cpp              # Câmera
+  src/freeCamera.cpp                # Câmera
+  src/Player.cpp                    # Jogador e callbacks         
 )
 
 
