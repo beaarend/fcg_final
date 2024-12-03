@@ -3,6 +3,11 @@
 #include <vector>
 #include <string>
 #include <glad/glad.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class SceneObject
 {
 private:
@@ -20,4 +25,6 @@ public:
     size_t num_indices;
     GLenum rendering_mode;
     void render();
+
+    bool getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal);
 };

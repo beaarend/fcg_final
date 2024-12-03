@@ -18,6 +18,8 @@ uniform mat4 projection;
 #define PLANE  2
 uniform int object_id;
 
+uniform vec3 objectColor;
+
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
@@ -76,7 +78,8 @@ void main()
     {
         // PREENCHA AQUI
         // Propriedades espectrais do plano
-        Kd = vec3(0.2,0.2,0.2);
+        // Kd = vec3(0.2,0.2,0.2);
+        Kd = objectColor;
         Ks = vec3(0.3,0.3,0.3);
         Ka = vec3(0.0,0.0,0.0);
         q = 20.0;

@@ -226,6 +226,27 @@ float ramp_angle_x = 0.0f;
 float ramp_angle_y = 0.0f;
 float ramp_angle_z = -5.0f;
 
+// COLLISION TEST
+// Function to check collision between sphere and plane
+bool checkCollision(const glm::vec3& sphereCenter, float sphereRadius, const glm::vec3& planePoint, const glm::vec3& planeNormal, float tolerance = 0.01f) {
+    float distance = glm::dot(sphereCenter - planePoint, planeNormal);
+    return std::abs(distance) <= (sphereRadius + tolerance);
+}
+
+// Function to transform a point using a matrix
+glm::vec3 transformPoint(const glm::mat4& matrix, const glm::vec3& point) {
+    glm::vec4 transformedPoint = matrix * glm::vec4(point, 1.0f);
+    return glm::vec3(transformedPoint);
+}
+
+// Function to transform a normal using a matrix
+glm::vec3 transformNormal(const glm::mat4& matrix, const glm::vec3& normal) {
+    glm::vec4 transformedNormal = matrix * glm::vec4(normal, 0.0f);
+    return glm::normalize(glm::vec3(transformedNormal));
+}
+
+
+
 int main(int argc, char* argv[])
 {
 
@@ -293,8 +314,15 @@ int main(int argc, char* argv[])
     GpuProgramController gpu_controller(g_GpuProgramID);
     
     SceneObject sphereObject("../../resources/objects/sphere.obj");
-    SceneObject bunnyObject("../../resources/objects/bunny.obj"); 
-    SceneObject planeObject("../../resources/objects/plane.obj");
+    SceneObject bunnyObject("../../resources/objects/bunny.obj");
+
+    SceneObject rampObject("../../resources/objects/plane.obj");
+    glm::vec3 rampPoint, rampNormal;
+    if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {
+        std::cerr << "Failed to get plane info" << std::endl;
+    }
+
+    SceneObject floorObject("../../resources/objects/plane.obj");
 
     if ( argc > 1 )
     {
@@ -343,36 +371,66 @@ int main(int argc, char* argv[])
         #define SPHERE 0
         #define BUNNY  1
         #define PLANE  2
+        
 
         // Trying to make the sphere move
         // -> when animating an object according to the camera, put the translate first
+        glm::mat4 sphereModel = Matrices::Identity(); 
         glm::vec4 playerPosition = player.position;
-        model = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z)
-              * Matrices::Translate(0.0f, -0.5f, 0.0f)
-              * Matrices::Scale(0.5f, 0.5f, 0.5f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        sphereModel = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z)
+              * Matrices::Translate(0.0f, -0.7f, 0.0f)
+              * Matrices::Scale(0.3f, 0.3f, 0.3f);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(sphereModel));
         glUniform1i(g_object_id_uniform, SPHERE);
         sphereObject.render();
+        glm::vec3 sphereCenter = glm::vec3(playerPosition);
+        float sphereRadius = 0.3f;
 
-        // Desenhamos o modelo do coelho
-        model = Matrices::Translate(1.0f,0.0f,0.0f)
+        // // Desenhamos o modelo do coelho
+        // model = Matrices::Translate(1.0f,0.0f,0.0f)
+        //       * Matrices::RotateZ(g_AngleZ)
+        //       * Matrices::RotateY(g_AngleY)
+        //       * Matrices::RotateX(g_AngleX);
+        // glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        // glUniform1i(g_object_id_uniform, BUNNY);
+        // bunnyObject.render();
+
+        // Drawing floor
+        model = Matrices::Scale(5.0f, 0.5f, 2.0f)
+              * Matrices::Translate(0.0f, -2.0f, 0.4f)
               * Matrices::RotateZ(g_AngleZ)
               * Matrices::RotateY(g_AngleY)
               * Matrices::RotateX(g_AngleX);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, PLANE);
+        glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 0.5f, 0.5f, 0.5f); // Gray color
+        floorObject.render();
 
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        bunnyObject.render();
-
-        // Desenhamos o modelo do plano (chão)
-        model = Matrices::Scale(10.0f, 0.5f, 10.0f)
+        // Drawing ramp
+        glm::mat4 rampModel = Matrices::Identity(); 
+        rampModel = Matrices::Scale(5.0f, 0.5f, 5.0f)
               * Matrices::Translate(0.0f, -1.0f, -0.5f)
               * Matrices::RotateZ(ramp_angle_x)
               * Matrices::RotateY(ramp_angle_y)
               * Matrices::RotateX(ramp_angle_z);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(rampModel));
         glUniform1i(g_object_id_uniform, PLANE);
-        planeObject.render();
+        glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 1.0f, 0.0f, 0.0f); // Red color
+        rampObject.render();
+
+        // Transform ramp point and normal
+        glm::vec3 transformedRampPoint = transformPoint(rampModel, rampPoint);
+        glm::vec3 transformedRampNormal = transformNormal(rampModel, rampNormal);
+
+        //  // Debugging: Print transformed points and normals
+        // std::cout << "Transformed Ramp Point: " << transformedRampPoint.x << ", " << transformedRampPoint.y << ", " << transformedRampPoint.z << std::endl;
+        // std::cout << "Transformed Ramp Normal: " << transformedRampNormal.x << ", " << transformedRampNormal.y << ", " << transformedRampNormal.z << std::endl;
+        // std::cout << "Sphere Center: " << sphereCenter.x << ", " << sphereCenter.y << ", " << sphereCenter.z << std::endl;
+
+        if (checkCollision(sphereCenter, sphereRadius, transformedRampPoint, transformedRampNormal)) {
+            std::cout << "Collision detected between sphere and ramp!" << std::endl;
+        }
+
 
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do

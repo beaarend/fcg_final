@@ -219,3 +219,26 @@ void SceneObject::render()
     glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, (void *)(first_index * sizeof(GLuint)));
     glBindVertexArray(0);
 }
+
+bool SceneObject::getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal) {
+    if (shapes.empty() || shapes[0].mesh.indices.size() < 3) {
+        return false; 
+    }
+
+    tinyobj::index_t idx0 = shapes[0].mesh.indices[0];
+    tinyobj::index_t idx1 = shapes[0].mesh.indices[1];
+    tinyobj::index_t idx2 = shapes[0].mesh.indices[2];
+
+    glm::vec3 v0(attrib.vertices[3 * idx0.vertex_index + 0], attrib.vertices[3 * idx0.vertex_index + 1], attrib.vertices[3 * idx0.vertex_index + 2]);
+    glm::vec3 v1(attrib.vertices[3 * idx1.vertex_index + 0], attrib.vertices[3 * idx1.vertex_index + 1], attrib.vertices[3 * idx1.vertex_index + 2]);
+    glm::vec3 v2(attrib.vertices[3 * idx2.vertex_index + 0], attrib.vertices[3 * idx2.vertex_index + 1], attrib.vertices[3 * idx2.vertex_index + 2]);
+
+    glm::vec3 edge1 = v1 - v0;
+    glm::vec3 edge2 = v2 - v0;
+    planeNormal = glm::normalize(glm::cross(edge1, edge2));
+
+    planePoint = v0;
+
+    return true;
+}
+
