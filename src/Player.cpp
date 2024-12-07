@@ -38,14 +38,22 @@ void Player::AddFreeCamera(FreeCamera *free_camera)
 
 void Player::UpdatePosition(float delta_time)
 {
-    if (this->pressing_W)
+    if (this->pressing_W){
         this->position.z -= PLAYER_SPEED * delta_time;
-    if (this->pressing_A)
+        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+    }
+    if (this->pressing_A){
         this->position.x -= PLAYER_SPEED * delta_time;
-    if (this->pressing_S)
+        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+    }
+    if (this->pressing_S){
         this->position.z += PLAYER_SPEED * delta_time;
-    if (this->pressing_D)
+        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+    }
+    if (this->pressing_D){
         this->position.x += PLAYER_SPEED * delta_time;
+        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+    }
 
     
     if (this->is_jumping)

@@ -21,6 +21,7 @@ set(SOURCES
   src/lookAtCamera.cpp              # Câmera
   src/freeCamera.cpp                # Câmera
   src/Player.cpp                    # Jogador e callbacks  
+  src/collisions.cpp                # Colisões
 )
 
 

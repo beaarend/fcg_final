@@ -1,3 +1,4 @@
+#include "gpuProgramController.h"
 #include <SceneObject.hpp>
 #include <iostream>
 #include <glm/glm.hpp>
@@ -211,14 +212,16 @@ SceneObject::SceneObject(const char *filename)
 
     ComputeNormals();
     initBuffers();
+    calculateHitbox();
 }
 
-void SceneObject::render()
+void SceneObject::render(GpuProgramController& gpuProgramController)
 {
-    glBindVertexArray(vertex_array_object_id);
+    gpuProgramController.DrawObject(vertex_array_object_id, model_matrix,this->object_id,this->object_color);
     glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, (void *)(first_index * sizeof(GLuint)));
     glBindVertexArray(0);
 }
+
 
 bool SceneObject::getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal) {
     if (shapes.empty() || shapes[0].mesh.indices.size() < 3) {
@@ -242,3 +245,66 @@ bool SceneObject::getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal) {
     return true;
 }
 
+void SceneObject::calculateHitbox(){
+  if(attrib.vertices.empty()){
+    return;
+  }
+
+  hitboxMin = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
+  hitboxMax = hitboxMin;
+  for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
+    glm::vec3 vertex(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+    hitboxMin = glm::min(hitboxMin, vertex);
+    hitboxMax = glm::max(hitboxMax, vertex);
+  }
+}
+
+glm::vec3 SceneObject::getHitboxMin(){
+  return hitboxMin;
+}
+
+glm::vec3 SceneObject::getHitboxMax(){
+  return hitboxMax;
+}
+
+bool SceneObject::checkCollision(const SceneObject& other) {
+    return (hitboxMin.x <= other.hitboxMax.x && hitboxMax.x >= other.hitboxMin.x) &&
+           (hitboxMin.y <= other.hitboxMax.y && hitboxMax.y >= other.hitboxMin.y) &&
+           (hitboxMin.z <= other.hitboxMax.z && hitboxMax.z >= other.hitboxMin.z);
+}
+
+void SceneObject::scale(const glm::vec3& scale) {
+  model_matrix = Matrices::Scale(scale.x, scale.y, scale.z) * model_matrix;
+
+  calculateHitbox();
+}
+
+void SceneObject::translate(float x, float y, float z) {
+    model_matrix = Matrices::Translate(x, y, z) * model_matrix;
+  calculateHitbox();
+}
+
+void SceneObject::rotateX(float angle) {
+    model_matrix = Matrices::RotateX(angle) * model_matrix;
+  calculateHitbox();
+}
+
+void SceneObject::rotateY(float angle) {
+    model_matrix = Matrices::RotateY(angle) * model_matrix;
+  calculateHitbox();
+}
+
+void SceneObject::rotateZ(float angle) {
+  model_matrix = Matrices::RotateZ(angle) * model_matrix;
+  calculateHitbox();
+}
+
+void SceneObject::setObjectID(int object_id){
+  this->object_id = object_id;
+}
+void SceneObject::setModelMatrix(glm::mat4 model_matrix){
+  this->model_matrix = model_matrix;
+}
+void SceneObject::setObjectColor(glm::vec3 object_color){
+  this->object_color = object_color;
+}

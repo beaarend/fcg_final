@@ -49,6 +49,8 @@
 #include "gpuProgramController.h"
 #include "lookAtCamera.h"
 
+#include "collisions.hpp"
+
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -222,16 +224,10 @@ GLint g_object_id_uniform;
 
 #include "Player.hpp"
 
-float ramp_angle_x = 0.0f;
+float ramp_angle_x = 0.5f;
 float ramp_angle_y = 0.0f;
-float ramp_angle_z = -5.0f;
+float ramp_angle_z = 0.0f;
 
-// COLLISION TEST
-// Function to check collision between sphere and plane
-bool checkCollision(const glm::vec3& sphereCenter, float sphereRadius, const glm::vec3& planePoint, const glm::vec3& planeNormal, float tolerance = 0.01f) {
-    float distance = glm::dot(sphereCenter - planePoint, planeNormal);
-    return std::abs(distance) <= (sphereRadius + tolerance);
-}
 
 // Function to transform a point using a matrix
 glm::vec3 transformPoint(const glm::mat4& matrix, const glm::vec3& point) {
@@ -314,15 +310,39 @@ int main(int argc, char* argv[])
     GpuProgramController gpu_controller(g_GpuProgramID);
     
     SceneObject sphereObject("../../resources/objects/sphere.obj");
+    sphereObject.setObjectID(0);
+    sphereObject.translate(0.0f, -0.2f, 0.0f);
     SceneObject bunnyObject("../../resources/objects/bunny.obj");
+    bunnyObject.setObjectID(1);
+
+    std::cout<<"hitboxMin do sphereObject: "<<sphereObject.getHitboxMin().x<<", "<<sphereObject.getHitboxMin().y<<", "<<sphereObject.getHitboxMin().z<<std::endl;
+    std::cout<<"hitboxMax do sphereObject: "<<sphereObject.getHitboxMax().x<<", "<<sphereObject.getHitboxMax().y<<", "<<sphereObject.getHitboxMax().z<<std::endl;
 
     SceneObject rampObject("../../resources/objects/plane.obj");
+    rampObject.setObjectID(2);
+    rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
+    rampObject.translate(0.0f, -1.0f, -0.5f);
+    rampObject.rotateX(ramp_angle_x);
+    rampObject.rotateY(ramp_angle_y);
+    rampObject.rotateZ(ramp_angle_z);
+    rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
+    
     glm::vec3 rampPoint, rampNormal;
     if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {
         std::cerr << "Failed to get plane info" << std::endl;
     }
+    std::cout<<"hitboxMin do rampObject: "<<rampObject.getHitboxMin().x<<", "<<rampObject.getHitboxMin().y<<", "<<rampObject.getHitboxMin().z<<std::endl;
+    std::cout<<"hitboxMax do rampObject: "<<rampObject.getHitboxMax().x<<", "<<rampObject.getHitboxMax().y<<", "<<rampObject.getHitboxMax().z<<std::endl;
+
+    //colisao ta dando errado pq ele ta considerando as coordenadas locais do objeto, nao as globais
+    
 
     SceneObject floorObject("../../resources/objects/plane.obj");
+    floorObject.setObjectID(3);
+    floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
+    floorObject.translate(0.0f, -2.0f, 0.4f);
+    floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
+    
 
     if ( argc > 1 )
     {
@@ -373,16 +393,13 @@ int main(int argc, char* argv[])
         #define PLANE  2
         
 
-        // Trying to make the sphere move
-        // -> when animating an object according to the camera, put the translate first
-        glm::mat4 sphereModel = Matrices::Identity(); 
         glm::vec4 playerPosition = player.position;
-        sphereModel = Matrices::Translate(playerPosition.x, playerPosition.y, playerPosition.z)
-              * Matrices::Translate(0.0f, -0.7f, 0.0f)
-              * Matrices::Scale(0.3f, 0.3f, 0.3f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(sphereModel));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        sphereObject.render();
+        sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
+        sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
+        sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        sphereObject.translate(0.0f, -0.7f, 0.0f);
+        sphereObject.render(gpu_controller);
+
         glm::vec3 sphereCenter = glm::vec3(playerPosition);
         float sphereRadius = 0.3f;
 
@@ -396,40 +413,46 @@ int main(int argc, char* argv[])
         // bunnyObject.render();
 
         // Drawing floor
-        model = Matrices::Scale(5.0f, 0.5f, 2.0f)
-              * Matrices::Translate(0.0f, -2.0f, 0.4f)
-              * Matrices::RotateZ(g_AngleZ)
-              * Matrices::RotateY(g_AngleY)
-              * Matrices::RotateX(g_AngleX);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
-        glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 0.5f, 0.5f, 0.5f); // Gray color
-        floorObject.render();
+        /*model = Matrices::Scale(5.0f, 0.5f, 2.0f)*/
+        /*      * Matrices::Translate(0.0f, -2.0f, 0.4f)*/
+        /*      * Matrices::RotateZ(g_AngleZ)*/
+        /*      * Matrices::RotateY(g_AngleY)*/
+        /*      * Matrices::RotateX(g_AngleX);*/
+        /*glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));*/
+        /*glUniform1i(g_object_id_uniform, PLANE);*/
+        /*glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 0.5f, 0.5f, 0.5f); // Gray color*/
+        /*floorObject.render(gpu_controller);*/
 
         // Drawing ramp
-        glm::mat4 rampModel = Matrices::Identity(); 
-        rampModel = Matrices::Scale(5.0f, 0.5f, 5.0f)
-              * Matrices::Translate(0.0f, -1.0f, -0.5f)
-              * Matrices::RotateZ(ramp_angle_x)
-              * Matrices::RotateY(ramp_angle_y)
-              * Matrices::RotateX(ramp_angle_z);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(rampModel));
-        glUniform1i(g_object_id_uniform, PLANE);
-        glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 1.0f, 0.0f, 0.0f); // Red color
-        rampObject.render();
+        /*glm::mat4 rampModel = Matrices::Identity(); */
+        /*rampModel = Matrices::Scale(5.0f, 0.5f, 5.0f)*/
+        /*      * Matrices::Translate(0.0f, -1.0f, -0.5f)*/
+        /*      * Matrices::RotateZ(ramp_angle_x)*/
+        /*      * Matrices::RotateY(ramp_angle_y)*/
+        /*      * Matrices::RotateX(ramp_angle_z);*/
+        /*glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(rampModel));*/
+        /*glUniform1i(g_object_id_uniform, PLANE);*/
+        /*glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 1.0f, 0.0f, 0.0f); // Red color*/
+        rampObject.render(gpu_controller);
+        /*if(rampObject.checkCollision(sphereObject))*/
+        /*  std::cout<<"Collision detected between sphere and ramp!"<<std::endl;*/
+
 
         // Transform ramp point and normal
-        glm::vec3 transformedRampPoint = transformPoint(rampModel, rampPoint);
-        glm::vec3 transformedRampNormal = transformNormal(rampModel, rampNormal);
+        /*glm::vec3 transformedRampPoint = transformPoint(rampModel, rampPoint);*/
+        /*glm::vec3 transformedRampNormal = transformNormal(rampModel, rampNormal);*/
 
         //  // Debugging: Print transformed points and normals
         // std::cout << "Transformed Ramp Point: " << transformedRampPoint.x << ", " << transformedRampPoint.y << ", " << transformedRampPoint.z << std::endl;
         // std::cout << "Transformed Ramp Normal: " << transformedRampNormal.x << ", " << transformedRampNormal.y << ", " << transformedRampNormal.z << std::endl;
         // std::cout << "Sphere Center: " << sphereCenter.x << ", " << sphereCenter.y << ", " << sphereCenter.z << std::endl;
 
-        if (checkCollision(sphereCenter, sphereRadius, transformedRampPoint, transformedRampNormal)) {
-            std::cout << "Collision detected between sphere and ramp!" << std::endl;
-        }
+        /*if (checkCollision(sphereCenter, sphereRadius, transformedRampPoint, transformedRampNormal)) {*/
+        /*    std::cout << "Collision detected between sphere and ramp!" << std::endl;*/
+        /*}*/
+        /*if(sphereObject.checkCollision(rampObject)) {*/
+        /*    std::cout << "Collision detected between sphere and ramp!" << std::endl;*/
+        /*}*/
 
 
 

@@ -84,12 +84,16 @@ void main()
         Ka = vec3(0.0,0.0,0.0);
         q = 20.0;
     }
-    else // Objeto desconhecido = preto
+    else // Objeto desconhecido = preto //mudei para a mesma coisa da esfera
     {
-        Kd = vec3(0.0,0.0,0.0);
+        Kd = objectColor;
         Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.0,0.0,0.0);
+        Ka = vec3(0.4,0.2,0.04);
         q = 1.0;
+        // Kd = vec3(0.0,0.0,0.0);
+        // Ks = vec3(0.0,0.0,0.0);
+        // Ka = vec3(0.0,0.0,0.0);
+        // q = 1.0;
     }
 
     // Espectro da fonte de iluminação
