@@ -228,21 +228,8 @@ float ramp_angle_x = 0.5f;
 float ramp_angle_y = 0.0f;
 float ramp_angle_z = 0.0f;
 
-#include <thread>
-#include <chrono>
-
-
-// Function to transform a point using a matrix
-glm::vec3 transformPoint(const glm::mat4& matrix, const glm::vec3& point) {
-    glm::vec4 transformedPoint = matrix * glm::vec4(point, 1.0f);
-    return glm::vec3(transformedPoint);
-}
-
-// Function to transform a normal using a matrix
-glm::vec3 transformNormal(const glm::mat4& matrix, const glm::vec3& normal) {
-    glm::vec4 transformedNormal = matrix * glm::vec4(normal, 0.0f);
-    return glm::normalize(glm::vec3(transformedNormal));
-}
+enum GameState { CUTSCENE, GAMEPLAY };
+GameState gameState = CUTSCENE;
 
 int main(int argc, char* argv[])
 {
@@ -370,11 +357,13 @@ int main(int argc, char* argv[])
     FreeCamera freeCamera(g_ScreenRatio, &gpu_controller);
     player.AddFreeCamera(&freeCamera);
 
+    FreeCamera introCamera(g_ScreenRatio, &gpu_controller);
+
     float previous_time = glfwGetTime();
     float current_time = 0.0f;
     float delta_time = 0.0f;
 
-    // bool animation = true;
+    float cutscene_time = 0.0f; // Tracks how long the cutscene has run
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -387,83 +376,47 @@ int main(int argc, char* argv[])
         delta_time = current_time - previous_time;
         previous_time = current_time;
 
-        // while(animation)
-        // {
-        //     std::this_thread::sleep_for(std::chrono::seconds(5));
-        //     animation = false;
-        // }
+        if (gameState == CUTSCENE)
+        {
+            cutscene_time += delta_time;
+
+            glm::vec4 cutscenePosition(0.0f, 0.0f, 0.0f, 1.0f);
+            glm::vec4 cutsceneTarget(1.0f, 0.0f, 0.0f, 1.0f);
+
+            if (cutscene_time < 2.0f)  // 2 segundos
+            {
+                cutscenePosition.x = cutscene_time * 0.5f;  
+                introCamera.Update(cutscenePosition, delta_time);
+                std::cout<<"time: "<<cutscene_time<<std::endl;
+            }
+            else
+            {
+                gameState = GAMEPLAY; 
+            }
+        }
+        else if (gameState == GAMEPLAY)
+        {
+            player.Update(delta_time);
+
+            glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
+
+            #define SPHERE 0
+            #define BUNNY  1
+            #define PLANE  2
+            
+            glm::vec4 playerPosition = player.position;
+            sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
+            sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
+            sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+            sphereObject.translate(0.0f, -0.7f, 0.0f);
+            sphereObject.render(gpu_controller);
+
+            glm::vec3 sphereCenter = glm::vec3(playerPosition);
+            float sphereRadius = 0.3f;
+
+            rampObject.render(gpu_controller);
+        }
         
-        player.Update(delta_time);
-
-        glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
-
-        #define SPHERE 0
-        #define BUNNY  1
-        #define PLANE  2
-        
-        glm::vec4 playerPosition = player.position;
-        sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
-        sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
-        sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
-        sphereObject.translate(0.0f, -0.7f, 0.0f);
-        sphereObject.render(gpu_controller);
-
-        glm::vec3 sphereCenter = glm::vec3(playerPosition);
-        float sphereRadius = 0.3f;
-
-        // // Desenhamos o modelo do coelho
-        // model = Matrices::Translate(1.0f,0.0f,0.0f)
-        //       * Matrices::RotateZ(g_AngleZ)
-        //       * Matrices::RotateY(g_AngleY)
-        //       * Matrices::RotateX(g_AngleX);
-        // glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        // glUniform1i(g_object_id_uniform, BUNNY);
-        // bunnyObject.render();
-
-        // Drawing floor
-        /*model = Matrices::Scale(5.0f, 0.5f, 2.0f)*/
-        /*      * Matrices::Translate(0.0f, -2.0f, 0.4f)*/
-        /*      * Matrices::RotateZ(g_AngleZ)*/
-        /*      * Matrices::RotateY(g_AngleY)*/
-        /*      * Matrices::RotateX(g_AngleX);*/
-        /*glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));*/
-        /*glUniform1i(g_object_id_uniform, PLANE);*/
-        /*glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 0.5f, 0.5f, 0.5f); // Gray color*/
-        /*floorObject.render(gpu_controller);*/
-
-        // Drawing ramp
-        /*glm::mat4 rampModel = Matrices::Identity(); */
-        /*rampModel = Matrices::Scale(5.0f, 0.5f, 5.0f)*/
-        /*      * Matrices::Translate(0.0f, -1.0f, -0.5f)*/
-        /*      * Matrices::RotateZ(ramp_angle_x)*/
-        /*      * Matrices::RotateY(ramp_angle_y)*/
-        /*      * Matrices::RotateX(ramp_angle_z);*/
-        /*glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(rampModel));*/
-        /*glUniform1i(g_object_id_uniform, PLANE);*/
-        /*glUniform3f(glGetUniformLocation(g_GpuProgramID, "objectColor"), 1.0f, 0.0f, 0.0f); // Red color*/
-        rampObject.render(gpu_controller);
-        /*if(rampObject.checkCollision(sphereObject))*/
-        /*  std::cout<<"Collision detected between sphere and ramp!"<<std::endl;*/
-
-
-        // Transform ramp point and normal
-        /*glm::vec3 transformedRampPoint = transformPoint(rampModel, rampPoint);*/
-        /*glm::vec3 transformedRampNormal = transformNormal(rampModel, rampNormal);*/
-
-        //  // Debugging: Print transformed points and normals
-        // std::cout << "Transformed Ramp Point: " << transformedRampPoint.x << ", " << transformedRampPoint.y << ", " << transformedRampPoint.z << std::endl;
-        // std::cout << "Transformed Ramp Normal: " << transformedRampNormal.x << ", " << transformedRampNormal.y << ", " << transformedRampNormal.z << std::endl;
-        // std::cout << "Sphere Center: " << sphereCenter.x << ", " << sphereCenter.y << ", " << sphereCenter.z << std::endl;
-
-        /*if (checkCollision(sphereCenter, sphereRadius, transformedRampPoint, transformedRampNormal)) {*/
-        /*    std::cout << "Collision detected between sphere and ramp!" << std::endl;*/
-        /*}*/
-        /*if(sphereObject.checkCollision(rampObject)) {*/
-        /*    std::cout << "Collision detected between sphere and ramp!" << std::endl;*/
-        /*}*/
-
-
-
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
         TextRendering_ShowEulerAngles(window);
@@ -475,18 +428,8 @@ int main(int argc, char* argv[])
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);
 
-        // O framebuffer onde OpenGL executa as operações de renderização não
-        // é o mesmo que está sendo mostrado para o usuário, caso contrário
-        // seria possível ver artefatos conhecidos como "screen tearing". A
-        // chamada abaixo faz a troca dos buffers, mostrando para o usuário
-        // tudo que foi renderizado pelas funções acima.
-        // Veja o link: https://en.wikipedia.org/w/index.php?title=Multiple_buffering&oldid=793452829#Double_buffering_in_computer_graphics
         glfwSwapBuffers(window);
 
-        // Verificamos com o sistema operacional se houve alguma interação do
-        // usuário (teclado, mouse, ...). Caso positivo, as funções de callback
-        // definidas anteriormente usando glfwSet*Callback() serão chamadas
-        // pela biblioteca GLFW.
         glfwPollEvents();
     }
 
