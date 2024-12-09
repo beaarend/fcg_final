@@ -21,6 +21,9 @@ void LookAtCamera::Update(glm::vec4 player_position)
     if (y < 0.01f) {
         y = 0.01f; 
     }
+    if (y > r - 0.01f) {
+        y = r - 0.01f;
+    }
 
     float r_xy = sqrt(r * r - y * y);
 
