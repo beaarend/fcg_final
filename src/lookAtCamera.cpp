@@ -41,6 +41,4 @@ void LookAtCamera::Update(glm::vec4 player_position)
     glm::mat4 projection = Matrices::Perspective(field_of_view, screen_ratio, nearplane, farplane);
 
     gpu_controller->SendPlayerCameraMatrices(view, projection);
-
-    std::cout << "Camera position: " << camera_position.x << " " << camera_position.y << " " << camera_position.z << std::endl;
 }
