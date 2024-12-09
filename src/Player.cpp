@@ -180,7 +180,6 @@ void Player::MouseButtonCallback(GLFWwindow *window, int button, int action, int
 
 void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
-    //TODO: change values here cause its too fast
 
     float dx = xpos - this->cursorPosX;
     float dy = ypos - this->cursorPosY;

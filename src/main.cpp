@@ -228,6 +228,9 @@ float ramp_angle_x = 0.5f;
 float ramp_angle_y = 0.0f;
 float ramp_angle_z = 0.0f;
 
+#include <thread>
+#include <chrono>
+
 
 // Function to transform a point using a matrix
 glm::vec3 transformPoint(const glm::mat4& matrix, const glm::vec3& point) {
@@ -240,8 +243,6 @@ glm::vec3 transformNormal(const glm::mat4& matrix, const glm::vec3& normal) {
     glm::vec4 transformedNormal = matrix * glm::vec4(normal, 0.0f);
     return glm::normalize(glm::vec3(transformedNormal));
 }
-
-
 
 int main(int argc, char* argv[])
 {
@@ -373,6 +374,8 @@ int main(int argc, char* argv[])
     float current_time = 0.0f;
     float delta_time = 0.0f;
 
+    // bool animation = true;
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -383,6 +386,12 @@ int main(int argc, char* argv[])
         current_time = glfwGetTime();
         delta_time = current_time - previous_time;
         previous_time = current_time;
+
+        // while(animation)
+        // {
+        //     std::this_thread::sleep_for(std::chrono::seconds(5));
+        //     animation = false;
+        // }
         
         player.Update(delta_time);
 
@@ -392,7 +401,6 @@ int main(int argc, char* argv[])
         #define BUNNY  1
         #define PLANE  2
         
-
         glm::vec4 playerPosition = player.position;
         sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
         sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
