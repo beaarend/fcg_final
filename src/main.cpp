@@ -231,6 +231,8 @@ float ramp_angle_z = 0.0f;
 enum GameState { CUTSCENE, GAMEPLAY };
 GameState gameState = CUTSCENE;
 
+#include "cutScene.hpp"
+
 int main(int argc, char* argv[])
 {
 
@@ -330,7 +332,6 @@ int main(int argc, char* argv[])
     floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
     floorObject.translate(0.0f, -2.0f, 0.4f);
     floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
-    
 
     if ( argc > 1 )
     {
@@ -357,7 +358,9 @@ int main(int argc, char* argv[])
     FreeCamera freeCamera(g_ScreenRatio, &gpu_controller);
     player.AddFreeCamera(&freeCamera);
 
-    FreeCamera introCamera(g_ScreenRatio, &gpu_controller);
+    CutScene cutscene(&gpu_controller);
+    LookAtCamera introCamera(g_ScreenRatio, &gpu_controller);
+    cutscene.AddLookAtCamera(&introCamera);
 
     float previous_time = glfwGetTime();
     float current_time = 0.0f;
@@ -380,25 +383,21 @@ int main(int argc, char* argv[])
         {
             cutscene_time += delta_time;
 
-            glm::vec4 cutscenePosition(0.0f, 0.0f, 0.0f, 1.0f);
-            glm::vec4 cutsceneTarget(1.0f, 0.0f, 0.0f, 1.0f);
-
             if (cutscene_time < 2.0f)  // 2 segundos
             {
-                cutscenePosition.x = cutscene_time * 0.5f;  
-                introCamera.Update(cutscenePosition, delta_time);
-                std::cout<<"time: "<<cutscene_time<<std::endl;
+                cutscene.Update(delta_time);
             }
             else
             {
-                gameState = GAMEPLAY; 
+                gameState = GAMEPLAY;
+
             }
         }
         else if (gameState == GAMEPLAY)
         {
             player.Update(delta_time);
 
-            glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
+            //glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
 
             #define SPHERE 0
             #define BUNNY  1
@@ -411,10 +410,11 @@ int main(int argc, char* argv[])
             sphereObject.translate(0.0f, -0.7f, 0.0f);
             sphereObject.render(gpu_controller);
 
-            glm::vec3 sphereCenter = glm::vec3(playerPosition);
-            float sphereRadius = 0.3f;
+            // glm::vec3 sphereCenter = glm::vec3(playerPosition);
+            // float sphereRadius = 0.3f;
 
             rampObject.render(gpu_controller);
+
         }
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
