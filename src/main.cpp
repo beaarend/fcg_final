@@ -366,8 +366,6 @@ int main(int argc, char* argv[])
     float current_time = 0.0f;
     float delta_time = 0.0f;
 
-    float cutscene_time = 0.0f; // Tracks how long the cutscene has run
-
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -381,9 +379,9 @@ int main(int argc, char* argv[])
 
         if (gameState == CUTSCENE)
         {
-            cutscene_time += delta_time;
+            cutscene.current_time += delta_time;
 
-            if (cutscene_time < 2.0f)  // 2 segundos
+            if (cutscene.current_time < cutscene.total_time)  // 2 segundos
             {
                 cutscene.Update(delta_time);
             }
@@ -397,25 +395,19 @@ int main(int argc, char* argv[])
         {
             player.Update(delta_time);
 
-            //glm::mat4 model = Matrices::Identity(); // Transformação identidade de modelagem
-
-            #define SPHERE 0
-            #define BUNNY  1
-            #define PLANE  2
-            
-            glm::vec4 playerPosition = player.position;
-            sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
-            sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
-            sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
-            sphereObject.translate(0.0f, -0.7f, 0.0f);
-            sphereObject.render(gpu_controller);
-
-            // glm::vec3 sphereCenter = glm::vec3(playerPosition);
-            // float sphereRadius = 0.3f;
-
-            rampObject.render(gpu_controller);
-
         }
+
+        #define SPHERE 0
+        #define BUNNY  1
+        #define PLANE  2
+
+        glm::vec4 playerPosition = player.position;
+        sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
+        sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
+        sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        sphereObject.translate(0.0f, -0.7f, 0.0f);
+        sphereObject.render(gpu_controller);
+        rampObject.render(gpu_controller);
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.

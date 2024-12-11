@@ -24,6 +24,7 @@ public:
 
     LookAtCamera(float screen_ratio, GpuProgramController *gpu_controller);
     void Update(glm::vec4 player_position);
+    void setAnglePhi(float angle);
 };
 
 #endif 

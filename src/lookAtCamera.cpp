@@ -12,6 +12,11 @@ LookAtCamera::LookAtCamera(float screen_ratio, GpuProgramController *gpu_control
     this->screen_ratio = screen_ratio;
 }
 
+void LookAtCamera::setAnglePhi(float angle)
+{
+    this->view_angle_phi = angle;
+}
+
 void LookAtCamera::Update(glm::vec4 player_position)
 {
     float r = distance;
