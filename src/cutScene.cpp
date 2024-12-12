@@ -71,10 +71,15 @@ void CutScene::AddLookAtCamera(LookAtCamera *look_at_camera)
 
 void CutScene::createSceneObjects() {
     
-    SceneObject sphereObject("../../resources/objects/sphere.obj");
-    sphereObject.setObjectID(0);
-    sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
-    addSceneObject(sphereObject);
+    // SceneObject sphereObject("../../resources/objects/sphere.obj");
+    // sphereObject.setObjectID(0);
+    // sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
+    // addSceneObject(sphereObject);
+
+    SceneObject cowObject("../../resources/objects/cow.obj");
+    cowObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
+    cowObject.setObjectID(3);
+    addSceneObject(cowObject);
 
     // TODO ADD FAUSTÃO NÃO SEI PQ ELE N APARECE >:/
     // SceneObject faustaoObject("../../resources/objects/faustao.obj");

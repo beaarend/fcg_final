@@ -311,7 +311,7 @@ int main(int argc, char* argv[])
     SceneObject rampObject("../../resources/objects/plane.obj");
     rampObject.setObjectID(2);
     rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
-    rampObject.translate(0.0f, -1.0f, -0.5f);
+    rampObject.translate(0.0f, 0.30f, -2.5f);
     rampObject.rotateX(ramp_angle_x);
     rampObject.rotateY(ramp_angle_y);
     rampObject.rotateZ(ramp_angle_z);
