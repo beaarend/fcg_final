@@ -1,7 +1,6 @@
 #include <iostream>
 #include <algorithm>
 #include "cutScene.hpp"
-#include <bits/stdc++.h>
 
 CutScene::CutScene(GpuProgramController *gpu_controller)
 {
@@ -12,8 +11,8 @@ CutScene::CutScene(GpuProgramController *gpu_controller)
     this->camera_position = glm::vec4(0.0f, INIT_Y, INIT_Z, 1.0f); 
     this->final_camera_position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     this->bezier_time = 0.0f; 
-    this->control_point = glm::vec4(0.0f, 1.0f, 4.0f, 1.0f);
-    this->control_point2 = glm::vec4(0.0f, 2.0f, 2.0f, 1.0f);
+    this->control_point = glm::vec4(0.0f, 4.5f, 4.5f, 1.0f);
+    this->control_point2 = glm::vec4(0.0f, 2.5f, 2.5f, 1.0f);
 }
 
 void CutScene::Update(float delta_time) 
@@ -22,6 +21,7 @@ void CutScene::Update(float delta_time)
         AdjustCameraAngle();
         ComputeBezier(delta_time);
     }
+
     this->look_at_camera->Update(this->camera_position);
     renderSceneObjects();
 }
@@ -73,13 +73,13 @@ void CutScene::createSceneObjects() {
     
     SceneObject sphereObject("../../resources/objects/sphere.obj");
     sphereObject.setObjectID(0);
-    sphereObject.translate(0.0f, INIT_Y, INIT_Z);
+    sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
     addSceneObject(sphereObject);
 
     // TODO ADD FAUSTÃO NÃO SEI PQ ELE N APARECE >:/
-    SceneObject faustaoObject("../../resources/objects/faustao.obj");
-    faustaoObject.setObjectID(3);
-    addSceneObject(faustaoObject);
+    // SceneObject faustaoObject("../../resources/objects/faustao.obj");
+    // faustaoObject.setObjectID(3);
+    // addSceneObject(faustaoObject);
 
 }
 

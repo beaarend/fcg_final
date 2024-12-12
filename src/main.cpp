@@ -388,6 +388,7 @@ int main(int argc, char* argv[])
             else
             {
                 gameState = GAMEPLAY;
+                std::cout << "CUTSCENE ENDED" << std::endl;
 
             }
         }
@@ -408,6 +409,7 @@ int main(int argc, char* argv[])
         sphereObject.translate(0.0f, -0.7f, 0.0f);
         sphereObject.render(gpu_controller);
         rampObject.render(gpu_controller);
+
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
