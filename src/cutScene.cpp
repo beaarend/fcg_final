@@ -82,9 +82,9 @@ void CutScene::createSceneObjects() {
     addSceneObject(cowObject);
 
     // TODO ADD FAUSTÃO NÃO SEI PQ ELE N APARECE >:/
-    // SceneObject faustaoObject("../../resources/objects/faustao.obj");
-    // faustaoObject.setObjectID(3);
-    // addSceneObject(faustaoObject);
+     /*addSceneObject(faustaoObject);*/
+    
+    
 
 }
 

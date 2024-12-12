@@ -304,6 +304,8 @@ int main(int argc, char* argv[])
     sphereObject.translate(0.0f, -0.2f, 0.0f);
     SceneObject bunnyObject("../../resources/objects/bunny.obj");
     bunnyObject.setObjectID(1);
+     SceneObject faustaoObject("../../resources/objects/faustao.obj");
+     faustaoObject.setObjectID(6);
 
     std::cout<<"hitboxMin do sphereObject: "<<sphereObject.getHitboxMin().x<<", "<<sphereObject.getHitboxMin().y<<", "<<sphereObject.getHitboxMin().z<<std::endl;
     std::cout<<"hitboxMax do sphereObject: "<<sphereObject.getHitboxMax().x<<", "<<sphereObject.getHitboxMax().y<<", "<<sphereObject.getHitboxMax().z<<std::endl;
@@ -311,7 +313,7 @@ int main(int argc, char* argv[])
     SceneObject rampObject("../../resources/objects/plane.obj");
     rampObject.setObjectID(2);
     rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
-    rampObject.translate(0.0f, 0.30f, -2.5f);
+    rampObject.translate(0.0f, -0.90f, -2.5f);
     rampObject.rotateX(ramp_angle_x);
     rampObject.rotateY(ramp_angle_y);
     rampObject.rotateZ(ramp_angle_z);
@@ -403,12 +405,15 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         glm::vec4 playerPosition = player.position;
-        sphereObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
-        sphereObject.scale(glm::vec3(0.3f, 0.3f, 0.3f));
-        sphereObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
-        sphereObject.translate(0.0f, -0.7f, 0.0f);
-        sphereObject.render(gpu_controller);
+        faustaoObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
+        faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+        faustaoObject.rotateX(-2.35f);
+        faustaoObject.rotateY(-3.14f);
+        faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        faustaoObject.translate(1.0f, 2.3f, 0.0f);
+        faustaoObject.render(gpu_controller);
         rampObject.render(gpu_controller);
+        /*faustaoObject.render(gpu_controller);*/
 
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do

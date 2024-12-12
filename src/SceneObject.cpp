@@ -91,10 +91,10 @@ void SceneObject::initBuffers()
                 const float vy = attrib.vertices[3 * idx.vertex_index + 1];
                 const float vz = attrib.vertices[3 * idx.vertex_index + 2];
 
-                model_coefficients.push_back(vx);   // X
-                model_coefficients.push_back(vy);   // Y
-                model_coefficients.push_back(vz);   // Z
-                model_coefficients.push_back(1.0f); // W
+                model_coefficients.push_back(vx);   
+                model_coefficients.push_back(vy);   
+                model_coefficients.push_back(vz);   
+                model_coefficients.push_back(1.0f); 
 
 
                 if (idx.normal_index != -1)
@@ -102,10 +102,10 @@ void SceneObject::initBuffers()
                     const float nx = attrib.normals[3 * idx.normal_index + 0];
                     const float ny = attrib.normals[3 * idx.normal_index + 1];
                     const float nz = attrib.normals[3 * idx.normal_index + 2];
-                    normal_coefficients.push_back(nx);   // X
-                    normal_coefficients.push_back(ny);   // Y
-                    normal_coefficients.push_back(nz);   // Z
-                    normal_coefficients.push_back(0.0f); // W
+                    normal_coefficients.push_back(nx);   
+                    normal_coefficients.push_back(ny);   
+                    normal_coefficients.push_back(nz);   
+                    normal_coefficients.push_back(0.0f); 
                 }
 
                 if (idx.texcoord_index != -1)
