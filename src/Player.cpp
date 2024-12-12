@@ -12,6 +12,8 @@ Player::Player()
     this->pressing_S = false;
     this->pressing_D = false;
 
+    this->pressed_P = false;
+
     this->pressing_Space = false;
     this->is_jumping = false;
     this->jump_velocity = 0.0f;
@@ -73,12 +75,11 @@ void Player::UpdatePosition(float delta_time)
 void Player::Update(float delta_time)
 {   
     this->UpdatePosition(delta_time);
-    // TODO: add head_movement ???? free é 1a pessoa e look at é 3a
 
     switch(this->camera_mode)
     {
         case CameraMode::Free:
-            this->free_camera->Update(this->position, PLAYER_SPEED/*, this->head_movement*/);
+            this->free_camera->Update(this->position, PLAYER_SPEED);
             break;
         case CameraMode::LookAt:
             this->look_at_camera->Update(this->position);
@@ -109,6 +110,9 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
             break;
         case GLFW_KEY_SPACE:
             key_pressed = "SPACE";
+            break;
+        case GLFW_KEY_P:
+            key_pressed = "P";
             break;
         }
     std::string action_string = "";
@@ -160,8 +164,21 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     }
 
     // Change cameras
+    if (key == GLFW_KEY_P && action == GLFW_PRESS)
+    {
+        this->pressed_P = !this->pressed_P;
+        if (this->pressed_P)
+        {
+            this->camera_mode = CameraMode::Free;
+        }
+        else
+        {
+            this->camera_mode = CameraMode::LookAt;
+        }
+    }
 
     std::cout << "Key: " << key_pressed << " | " << "Action: " << action_string << std::endl;
+    std::cout << "PAUSE" << this->pressed_P << std::endl;
     
 }
 
@@ -180,7 +197,6 @@ void Player::MouseButtonCallback(GLFWwindow *window, int button, int action, int
 
 void Player::CursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
-    //TODO: change values here cause its too fast
 
     float dx = xpos - this->cursorPosX;
     float dy = ypos - this->cursorPosY;

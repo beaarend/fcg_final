@@ -37,6 +37,8 @@ private:
     bool pressing_S;
     bool pressing_D;
 
+    bool pressed_P;
+
     bool pressing_Space;
     bool is_jumping;
     float jump_velocity;

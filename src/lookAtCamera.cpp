@@ -1,5 +1,6 @@
 #include "lookAtCamera.h"
 #include "matrices.h"
+#include "iostream"
 
 LookAtCamera::LookAtCamera(float screen_ratio, GpuProgramController *gpu_controller)
 {
@@ -11,12 +12,28 @@ LookAtCamera::LookAtCamera(float screen_ratio, GpuProgramController *gpu_control
     this->screen_ratio = screen_ratio;
 }
 
+void LookAtCamera::setAnglePhi(float angle)
+{
+    this->view_angle_phi = angle;
+}
+
 void LookAtCamera::Update(glm::vec4 player_position)
 {
     float r = distance;
+    
     float y = r * sin(view_angle_phi);
-    float z = r * cos(view_angle_phi) * cos(view_angle_theta);
-    float x = r * cos(view_angle_phi) * sin(view_angle_theta);
+
+    if (y < 0.01f) {
+        y = 0.01f; 
+    }
+    if (y > r - 0.01f) {
+        y = r - 0.01f;
+    }
+
+    float r_xy = sqrt(r * r - y * y);
+
+    float z = r_xy * cos(view_angle_theta);
+    float x = r_xy * sin(view_angle_theta);
 
     glm::vec4 camera_view_vector = glm::vec4(-x, -y, -z, 0.0f);
     glm::vec4 camera_position = player_position - camera_view_vector;
