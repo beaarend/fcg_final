@@ -34,7 +34,11 @@ public:
     size_t num_indices;
     GLenum rendering_mode;
     void render(GpuProgramController& gpuProgramController);
-    bool checkCollision(const SceneObject& other);
+    bool checkCollision( SceneObject& other);
+    void AdjustHitboxPoints();
+    void drawHitbox(); 
+    void UpdateHitbox();
+    void resetModelMatrix();
     glm::vec3 getHitboxMin();
     glm::vec3 getHitboxMax();
     void scale(const glm::vec3& scale);
