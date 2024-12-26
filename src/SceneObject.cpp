@@ -175,7 +175,7 @@ void SceneObject::initBuffers()
     glBindVertexArray(0);
 }
 
-SceneObject::SceneObject(const char *filename)
+SceneObject::SceneObject(const char *filename):hitbox(attrib)
 {
     std::string fullpath(filename);
     auto i = fullpath.find_last_of("/");
@@ -213,7 +213,7 @@ SceneObject::SceneObject(const char *filename)
 
     ComputeNormals();
     initBuffers();
-    calculateHitbox();
+    this->hitbox=Hitbox(attrib);
 }
 
 void SceneObject::render(GpuProgramController& gpuProgramController)
@@ -221,7 +221,8 @@ void SceneObject::render(GpuProgramController& gpuProgramController)
     gpuProgramController.DrawObject(vertex_array_object_id, model_matrix,this->object_id,this->object_color);
     glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, (void *)(first_index * sizeof(GLuint)));
     glBindVertexArray(0);
-    drawHitbox();
+    /*drawHitbox(gpuProgramController);*/
+    this->hitbox.draw(gpuProgramController);
 }
 
 
@@ -247,107 +248,107 @@ bool SceneObject::getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal) {
     return true;
 }
 
-void SceneObject::calculateHitbox(){
-  if(attrib.vertices.empty()){
-    return;
-  }
-
-  hitboxMin = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
-  hitboxMax = hitboxMin;
-  for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
-    glm::vec3 vertex(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
-    hitboxMin = glm::min(hitboxMin, vertex);
-    hitboxMax = glm::max(hitboxMax, vertex);
-  }
-  /*std::cout<<"Hitbox min: "<<hitboxMin.x<<" "<<hitboxMin.y<<" "<<hitboxMin.z<<" Hitbox max: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;*/
-}
-
-void SceneObject::UpdateHitbox() {
-    glm::vec3 transformedMin = glm::vec3(model_matrix * glm::vec4(hitboxMin, 1.0f));
-    glm::vec3 transformedMax = glm::vec3(model_matrix * glm::vec4(hitboxMax, 1.0f));
-
-    hitboxMin = glm::min(transformedMin, transformedMax);
-    hitboxMax = glm::max(transformedMin, transformedMax);
-}
-
-glm::vec3 SceneObject::getHitboxMin(){
-  return hitboxMin;
-}
-
-glm::vec3 SceneObject::getHitboxMax(){
-  return hitboxMax;
-}
+/*void SceneObject::calculateHitbox(){*/
+/*  if(attrib.vertices.empty()){*/
+/*    return;*/
+/*  }*/
+/*  std::cout<<"primeiro vertice: "<<attrib.vertices[0]<<" "<<attrib.vertices[1]<<" "<<attrib.vertices[2]<<std::endl;*/
+/*  hitboxMin = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);*/
+/*  hitboxMax = hitboxMin;*/
+/*  for (size_t i = 0; i < attrib.vertices.size(); i += 3) {*/
+/*    glm::vec3 vertex(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);*/
+/*    hitboxMin = glm::min(hitboxMin, vertex);*/
+/*    hitboxMax = glm::max(hitboxMax, vertex);*/
+/*  }*/
+/*  /*std::cout<<"Hitbox min: "<<hitboxMin.x<<" "<<hitboxMin.y<<" "<<hitboxMin.z<<" Hitbox max: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;*/
+/*}*/
+/**/
+/*void SceneObject::UpdateHitbox() {*/
+/*    if (attrib.vertices.empty()) {*/
+/*        return;*/
+/*    }*/
+/**/
+/*    hitboxMin = glm::vec3(model_matrix * glm::vec4(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2], 1.0f) );*/
+/*    hitboxMax = hitboxMin;*/
+/*    for (size_t i = 0; i < attrib.vertices.size(); i += 3) {*/
+/*        glm::vec3 vertex = glm::vec3(model_matrix * glm::vec4(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2], 1.0f));*/
+/*        hitboxMin = glm::min(hitboxMin, vertex);*/
+/*        hitboxMax = glm::max(hitboxMax, vertex);*/
+/*    }*/
+/*}*/
+/**/
+/*glm::vec3 SceneObject::getHitboxMin(){*/
+/*  return hitboxMin;*/
+/*}*/
+/**/
+/*glm::vec3 SceneObject::getHitboxMax(){*/
+/*  return hitboxMax;*/
+/*}*/
 
 bool SceneObject::checkCollision( SceneObject& other) {
-     glm::vec4 hitBoxMin= glm::vec4(this->getHitboxMin(),1.0f); 
-     glm::vec4 hitBoxMax= glm::vec4(this->getHitboxMax(),1.0f);
-    
-     glm::vec4 otherHitBoxMin= glm::vec4(other.getHitboxMin(),1.0f);
-     glm::vec4 otherHitBoxMax= glm::vec4(other.getHitboxMax(),1.0f);
-      
-    if(hitBoxMin.x > hitBoxMax.x){
-      std::swap(hitBoxMin.x, hitBoxMax.x);
-    }
-    if(hitBoxMin.y > hitBoxMax.y){
-      std::swap(hitBoxMin.y, hitBoxMax.y);
-    }
-    if(hitBoxMin.z > hitBoxMax.z){
-      std::swap(hitBoxMin.z, hitBoxMax.z);
-    }
-    
-    if(otherHitBoxMin.x > otherHitBoxMax.x){
-      std::swap(otherHitBoxMin.x, otherHitBoxMax.x);
-    }
-    if(otherHitBoxMin.y > otherHitBoxMax.y){
-      std::swap(otherHitBoxMin.y, otherHitBoxMax.y);
-    }
-    if(otherHitBoxMin.z > otherHitBoxMax.z){
-      std::swap(otherHitBoxMin.z, otherHitBoxMax.z);
-    }
-  
-    /*
-     1.5228 > 5 || 
-      */
-    std::cout<<"Hitbox min: "<<hitBoxMin.x<<" "<<hitBoxMin.y<<" "<<hitBoxMin.z<<" Hitbox max: "<<hitBoxMax.x<<" "<<hitBoxMax.y<<" "<<hitBoxMax.z<<" Position: "<<this->model_matrix[3][0]<<" "<<this->model_matrix[3][1]<<" "<<this->model_matrix[3][2]<<std::endl;
-    
-    std::cout<<"Other Hitbox min: "<<otherHitBoxMin.x<<" "<<otherHitBoxMin.y<<" "<<otherHitBoxMin.z<<" Other Hitbox max: "<<otherHitBoxMax.x<<" "<<otherHitBoxMax.y<<" "<<otherHitBoxMax.z<<" Position: "<<other.model_matrix[3][0]<<" "<<other.model_matrix[3][1]<<" "<<other.model_matrix[3][2]<<std::endl;
-
-  return hitBoxMin.x <= otherHitBoxMax.x && hitBoxMax.x >= otherHitBoxMin.x &&
-         hitBoxMin.y <= otherHitBoxMax.y && hitBoxMax.y >= otherHitBoxMin.y &&
-         hitBoxMin.z <= otherHitBoxMax.z && hitBoxMax.z >= otherHitBoxMin.z;
-
+  /*   glm::vec4 hitBoxMin= glm::vec4(this->getHitboxMin(),1.0f); */
+  /*   glm::vec4 hitBoxMax= glm::vec4(this->getHitboxMax(),1.0f);*/
+  /**/
+  /*   glm::vec4 otherHitBoxMin= glm::vec4(other.getHitboxMin(),1.0f);*/
+  /*   glm::vec4 otherHitBoxMax= glm::vec4(other.getHitboxMax(),1.0f);*/
+  /**/
+  /*  if(hitBoxMin.x > hitBoxMax.x){*/
+  /*    std::swap(hitBoxMin.x, hitBoxMax.x);*/
+  /*  }*/
+  /*  if(hitBoxMin.y > hitBoxMax.y){*/
+  /*    std::swap(hitBoxMin.y, hitBoxMax.y);*/
+  /*  }*/
+  /*  if(hitBoxMin.z > hitBoxMax.z){*/
+  /*    std::swap(hitBoxMin.z, hitBoxMax.z);*/
+  /*  }*/
+  /**/
+  /*  if(otherHitBoxMin.x > otherHitBoxMax.x){*/
+  /*    std::swap(otherHitBoxMin.x, otherHitBoxMax.x);*/
+  /*  }*/
+  /*  if(otherHitBoxMin.y > otherHitBoxMax.y){*/
+  /*    std::swap(otherHitBoxMin.y, otherHitBoxMax.y);*/
+  /*  }*/
+  /*  if(otherHitBoxMin.z > otherHitBoxMax.z){*/
+  /*    std::swap(otherHitBoxMin.z, otherHitBoxMax.z);*/
+  /*  }*/
+  /**/
+  /*  /**/
+  /*   1.5228 > 5 || */
+  /*    */
+  /*  std::cout<<"Hitbox min: "<<hitBoxMin.x<<" "<<hitBoxMin.y<<" "<<hitBoxMin.z<<" Hitbox max: "<<hitBoxMax.x<<" "<<hitBoxMax.y<<" "<<hitBoxMax.z<<" Position: "<<this->model_matrix[3][0]<<" "<<this->model_matrix[3][1]<<" "<<this->model_matrix[3][2]<<std::endl;*/
+  /**/
+  /*  std::cout<<"Other Hitbox min: "<<otherHitBoxMin.x<<" "<<otherHitBoxMin.y<<" "<<otherHitBoxMin.z<<" Other Hitbox max: "<<otherHitBoxMax.x<<" "<<otherHitBoxMax.y<<" "<<otherHitBoxMax.z<<" Position: "<<other.model_matrix[3][0]<<" "<<other.model_matrix[3][1]<<" "<<other.model_matrix[3][2]<<std::endl;*/
+  /**/
+  /*return hitBoxMin.x <= otherHitBoxMax.x && hitBoxMax.x >= otherHitBoxMin.x &&*/
+  /*       hitBoxMin.y <= otherHitBoxMax.y && hitBoxMax.y >= otherHitBoxMin.y &&*/
+  /*       hitBoxMin.z <= otherHitBoxMax.z && hitBoxMax.z >= otherHitBoxMin.z;*/
+  /**/
 }
 
+
 void SceneObject::scale(const glm::vec3& scale) {
-    /*model_matrix = Matrices::Scale(scale.x, scale.y, scale.z) * model_matrix;*/
-    /*std::cout<<"hitbox max antes: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;*/
-    hitboxMax = Matrices::Scale(scale.x, scale.y, scale.z) * glm::vec4(hitboxMax, 1.0f);
-    hitboxMin = Matrices::Scale(scale.x, scale.y, scale.z) * glm::vec4(hitboxMin, 1.0f);
-    /*std::cout<<"hitbox max depois: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;*/
+    model_matrix = Matrices::Scale(scale.x, scale.y, scale.z) * model_matrix;
+    this->hitbox.UpdateHitbox(model_matrix);
 }
 
 void SceneObject::translate(float x, float y, float z) {
     model_matrix = Matrices::Translate(x, y, z) * model_matrix;
-    hitboxMax = Matrices::Translate(x, y, z) * glm::vec4(hitboxMax, 1.0f);
-    hitboxMin = Matrices::Translate(x, y, z) * glm::vec4(hitboxMin, 1.0f); 
+    this->hitbox.UpdateHitbox(model_matrix);
 }
 
 void SceneObject::rotateX(float angle) {
-    model_matrix = Matrices::RotateX(angle) * model_matrix;
-    hitboxMax = Matrices::RotateX(angle) * glm::vec4(hitboxMax, 1.0f);
-    hitboxMin = Matrices::RotateX(angle) * glm::vec4(hitboxMin, 1.0f);
+    model_matrix = Matrices::RotateX(angle) * model_matrix; 
+    this->hitbox.UpdateHitbox(model_matrix);
 }
 
 void SceneObject::rotateY(float angle) {
     model_matrix = Matrices::RotateY(angle) * model_matrix;
-    hitboxMax = Matrices::RotateY(angle) * glm::vec4(hitboxMax, 1.0f);
-    hitboxMin = Matrices::RotateY(angle) * glm::vec4(hitboxMin, 1.0f);
+    this->hitbox.UpdateHitbox(model_matrix);
 }
 
 void SceneObject::rotateZ(float angle) {
   model_matrix = Matrices::RotateZ(angle) * model_matrix;
-  hitboxMax = Matrices::RotateZ(angle) * glm::vec4(hitboxMax, 1.0f);
-  hitboxMin = Matrices::RotateZ(angle) * glm::vec4(hitboxMin, 1.0f);
+  this->hitbox.UpdateHitbox(model_matrix);
 }
 
 void SceneObject::setObjectID(int object_id){
@@ -359,55 +360,60 @@ void SceneObject::setModelMatrix(glm::mat4 model_matrix){
 void SceneObject::setObjectColor(glm::vec3 object_color){
   this->object_color = object_color;
 }
-void SceneObject::drawHitbox() {
-  /*calculateHitbox();*/
-  std::cout<<"Drawing hitbox"<<"Hitbox min: "<<hitboxMin.x<<" "<<hitboxMin.y<<" "<<hitboxMin.z<<" Hitbox max: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;
-    glm::vec3 vertices[8] = {
-        hitboxMin,
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-        glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-        hitboxMax,
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
-    };
-
-    GLuint indices[24] = {
-        0, 1, 1, 2, 2, 3, 3, 0,
-        4, 5, 5, 6, 6, 7, 7, 4,
-        0, 4, 1, 5, 2, 6, 3, 7
-    };
-
-    GLuint VAO, VBO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-}
+/*void SceneObject::drawHitbox(GpuProgramController& gpuProgramController){*/
+/*  calculateHitbox();*/
+/*  std::cout<<"Drawing hitbox"<<"Hitbox min: "<<hitboxMin.x<<" "<<hitboxMin.y<<" "<<hitboxMin.z<<" Hitbox max: "<<hitboxMax.x<<" "<<hitboxMax.y<<" "<<hitboxMax.z<<std::endl;*/
+/*    glm::vec3 vertices[8] = {*/
+/*        hitboxMin,*/
+/*        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),*/
+/*        glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),*/
+/*        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),*/
+/*        glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),*/
+/*        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),*/
+/*        hitboxMax,*/
+/*        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)*/
+/*    };*/
+/*    for(int i=0;i<8;i++){*/
+/*      vertices[i]=glm::vec3(model_matrix*glm::vec4(vertices[i],1.0f));*/
+/*    }*/
+/*    GLuint indices[24] = {*/
+/*        0, 1, 1, 2, 2, 3, 3, 0,*/
+/*        4, 5, 5, 6, 6, 7, 7, 4,*/
+/*        0, 4, 1, 5, 2, 6, 3, 7*/
+/*    };*/
+/**/
+/*    GLuint VAO, VBO, EBO;*/
+/*    glGenVertexArrays(1, &VAO);*/
+/*    glGenBuffers(1, &VBO);*/
+/*    glGenBuffers(1, &EBO);*/
+/**/
+/*    glUniformMatrix4fv(gpuProgramController.GetModelUniform(), 1, GL_FALSE, glm::value_ptr(Matrices::Identity())); //resetando o model matrix para desenhar o hitbox*/
+/**/
+/*    glBindVertexArray(VAO);*/
+/**/
+/*    glBindBuffer(GL_ARRAY_BUFFER, VBO);*/
+/*    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);*/
+/**/
+/*    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);*/
+/*    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);*/
+/**/
+/*    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);*/
+/*    glEnableVertexAttribArray(0);*/
+/**/
+/*    glBindBuffer(GL_ARRAY_BUFFER, 0);*/
+/*    glBindVertexArray(0);*/
+/**/
+/*    glBindVertexArray(VAO);*/
+/*    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);*/
+/*    glBindVertexArray(0);*/
+/**/
+/*    glDeleteVertexArrays(1, &VAO);*/
+/*    glDeleteBuffers(1, &VBO);*/
+/*    glDeleteBuffers(1, &EBO);*/
+/*}*/
 
 void SceneObject::resetModelMatrix(){
   model_matrix = Matrices::Identity();
-  calculateHitbox();
+  /*calculateHitbox();*/
+  this->hitbox=Hitbox(attrib);
 }

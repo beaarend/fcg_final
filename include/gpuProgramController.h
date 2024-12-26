@@ -19,6 +19,7 @@ public:
 
     void SendPlayerCameraMatrices(glm::mat4 view, glm::mat4 projection);
     void DrawObject(GLuint vertex_array_object_id, glm::mat4 model,int objectID,glm::vec3 objectColor);
+    GLint GetModelUniform();
 };
 
 #endif

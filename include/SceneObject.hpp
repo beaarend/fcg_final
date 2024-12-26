@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <glad/glad.h>
-
+#include<Hitbox.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -19,9 +19,9 @@ private:
   void ComputeNormals();
   void calculateHitbox();
   glm::vec3 object_color=glm::vec3(0.5f,0.5f,0.5f);
-
-  glm::vec3 hitboxMin;
-  glm::vec3 hitboxMax;
+  Hitbox hitbox;
+  /*glm::vec3 hitboxMin;*/
+  /*glm::vec3 hitboxMax;*/
 
 
 public:
@@ -36,7 +36,7 @@ public:
     void render(GpuProgramController& gpuProgramController);
     bool checkCollision( SceneObject& other);
     void AdjustHitboxPoints();
-    void drawHitbox(); 
+    void drawHitbox(GpuProgramController& gpuProgramController); 
     void UpdateHitbox();
     void resetModelMatrix();
     glm::vec3 getHitboxMin();

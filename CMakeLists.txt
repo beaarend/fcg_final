@@ -23,6 +23,7 @@ set(SOURCES
   src/Player.cpp                    # Jogador e callbacks  
   src/collisions.cpp                # Colisões
   src/cutScene.cpp
+  src/Hitbox.cpp
 )
 
 

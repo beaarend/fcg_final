@@ -306,25 +306,23 @@ int main(int argc, char* argv[])
     bunnyObject.setObjectID(1);
     SceneObject faustaoObject("../../resources/objects/faustao.obj");
     faustaoObject.setObjectID(6);
-    faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+
+    /*faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));*/
 
 
     SceneObject rampObject("../../resources/objects/plane.obj");
     rampObject.setObjectID(2);
-    rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
+    rampObject.scale(glm::vec3(2.0f, 1.0f, 3.0f));
     rampObject.translate(0.0f, -0.90f, -2.5f);
     rampObject.rotateX(ramp_angle_x);
-    rampObject.rotateY(ramp_angle_y);
-    rampObject.rotateZ(ramp_angle_z);
+    /*rampObject.rotateY(ramp_angle_y);*/
+    /*rampObject.rotateZ(ramp_angle_z);*/
     rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
     
     glm::vec3 rampPoint, rampNormal;
     if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {
         std::cerr << "Failed to get plane info" << std::endl;
     }
-
-    //colisao ta dando errado pq ele ta considerando as coordenadas locais do objeto, nao as globais
-    
 
     SceneObject floorObject("../../resources/objects/plane.obj");
     floorObject.setObjectID(3);
@@ -404,18 +402,19 @@ int main(int argc, char* argv[])
 
         glm::vec4 playerPosition = player.position;
         faustaoObject.resetModelMatrix();
-        /*faustaoObject.rotateX(-2.35f);*/
-        /*faustaoObject.rotateY(-3.14f);*/
-        faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
-        faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        faustaoObject.rotateX(-2.35f);
+        faustaoObject.rotateY(-3.14f);
         faustaoObject.translate(1.0f, 2.3f, 0.0f);
-        /*faustaoObject.translate(0.0f,-2.9f,0.0f); // abaixa o objeto*/
+        faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+        faustaoObject.translate(0.0f,-2.9f,0.0f); // abaixa o objeto
+        faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        
         rampObject.render(gpu_controller);
         faustaoObject.render(gpu_controller);
 
-        bool coll=faustaoObject.checkCollision(rampObject);
-        if(coll)
-          std::cout<<"colidiu"<<std::endl;
+        /*bool coll=faustaoObject.checkCollision(rampObject);*/
+        /*if(coll)*/
+        /*  std::cout<<"colidiu"<<std::endl;*/
 
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
