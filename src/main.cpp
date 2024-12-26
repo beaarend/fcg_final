@@ -218,6 +218,8 @@ GLint g_model_uniform;
 GLint g_view_uniform;
 GLint g_projection_uniform;
 GLint g_object_id_uniform;
+GLint g_bbox_min_uniform;
+GLint g_bbox_max_uniform;
 
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH 800
@@ -232,6 +234,12 @@ enum GameState { CUTSCENE, GAMEPLAY };
 GameState gameState = CUTSCENE;
 
 #include "cutScene.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+// Número de texturas carregadas pela função LoadTextureImage()
+GLuint g_NumLoadedTextures = 0;
+void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
 
 int main(int argc, char* argv[])
 {
@@ -304,8 +312,14 @@ int main(int argc, char* argv[])
     sphereObject.translate(0.0f, -0.2f, 0.0f);
     SceneObject bunnyObject("../../resources/objects/bunny.obj");
     bunnyObject.setObjectID(1);
-     SceneObject faustaoObject("../../resources/objects/faustao.obj");
-     faustaoObject.setObjectID(6);
+
+
+    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj");
+    faustaoObject.setObjectID(6);
+
+    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
+    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
+    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
 
     std::cout<<"hitboxMin do sphereObject: "<<sphereObject.getHitboxMin().x<<", "<<sphereObject.getHitboxMin().y<<", "<<sphereObject.getHitboxMin().z<<std::endl;
     std::cout<<"hitboxMax do sphereObject: "<<sphereObject.getHitboxMax().x<<", "<<sphereObject.getHitboxMax().y<<", "<<sphereObject.getHitboxMax().z<<std::endl;
@@ -439,6 +453,58 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+// Função que carrega uma imagem para ser utilizada como textura
+void LoadTextureImage(const char* filename)
+{
+    printf("Carregando imagem \"%s\"... ", filename);
+
+    // Primeiro fazemos a leitura da imagem do disco
+    stbi_set_flip_vertically_on_load(true);
+    int width;
+    int height;
+    int channels;
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 3);
+
+    if ( data == NULL )
+    {
+        fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", filename);
+        std::exit(EXIT_FAILURE);
+    }
+
+    printf("OK (%dx%d).\n", width, height);
+
+    // Agora criamos objetos na GPU com OpenGL para armazenar a textura
+    GLuint texture_id;
+    GLuint sampler_id;
+    glGenTextures(1, &texture_id);
+    glGenSamplers(1, &sampler_id);
+
+    // Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Parâmetros de amostragem da textura.
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Agora enviamos a imagem lida do disco para a GPU
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+    GLuint textureunit = g_NumLoadedTextures;
+    glActiveTexture(GL_TEXTURE0 + textureunit);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindSampler(textureunit, sampler_id);
+
+    stbi_image_free(data);
+
+    g_NumLoadedTextures += 1;
+}
+
 // Função que desenha um objeto armazenado em g_VirtualScene. Veja definição
 // dos objetos na função BuildTrianglesAndAddToVirtualScene().
 void DrawVirtualObject(const char* object_name)
@@ -486,6 +552,14 @@ void LoadShadersFromFiles()
     g_view_uniform       = glGetUniformLocation(g_GpuProgramID, "view"); // Variável da matriz "view" em shader_vertex.glsl
     g_projection_uniform = glGetUniformLocation(g_GpuProgramID, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
     g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id"); // Variável "object_id" em shader_fragment.glsl
+    g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
+    g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
+
+    glUseProgram(g_GpuProgramID);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES
+    glUseProgram(0);
 }
 
 // Função que pega a matriz M e guarda a mesma no topo da pilha
@@ -702,6 +776,8 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel* model)
     // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
 }
+
+
 
 // Carrega um Vertex Shader de um arquivo GLSL. Veja definição de LoadShader() abaixo.
 GLuint LoadShader_Vertex(const char* filename)
