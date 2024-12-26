@@ -307,15 +307,45 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
     GpuProgramController gpu_controller(g_GpuProgramID);
     
-    SceneObject sphereObject("../../resources/objects/sphere.obj");
+    SceneObject sphereObject("../../resources/objects/sphere.obj", "unique");
     sphereObject.setObjectID(0);
     sphereObject.translate(0.0f, -0.2f, 0.0f);
-    SceneObject bunnyObject("../../resources/objects/bunny.obj");
+    SceneObject bunnyObject("../../resources/objects/bunny.obj", "unique");
     bunnyObject.setObjectID(1);
 
+    // SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj");
+    // faustaoObject.setObjectID(6);
 
-    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj");
-    faustaoObject.setObjectID(6);
+    std::vector<SceneObject> faustaoParts;
+    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple");
+
+    #define FAUSTAO_HAIR 4
+    #define FAUSTAO_FACE 5
+    #define FAUSTAO_CLOTHES 6
+    
+    // Iterate over shapes in the loaded object
+    for (const auto &shape : faustaoObject.shapes)
+    {
+        SceneObject individualObject(faustaoObject.attrib, shape, faustaoObject.materials);
+
+        if (shape.name == "Object.1")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_HAIR << "to FAUSTAO_HAIR" << std::endl;
+            individualObject.setObjectID(FAUSTAO_HAIR);
+        }
+        else if (shape.name == "Object.2")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_FACE << "to FAUSTAO_FACE" << std::endl;
+            individualObject.setObjectID(FAUSTAO_FACE);
+        }
+        else if (shape.name == "Object.3")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_CLOTHES << "to FAUSTAO_CLOTHES" << std::endl;
+            individualObject.setObjectID(FAUSTAO_CLOTHES);
+        }
+
+        faustaoParts.push_back(std::move(individualObject));
+    }
 
     LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
     LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
@@ -324,7 +354,7 @@ int main(int argc, char* argv[])
     std::cout<<"hitboxMin do sphereObject: "<<sphereObject.getHitboxMin().x<<", "<<sphereObject.getHitboxMin().y<<", "<<sphereObject.getHitboxMin().z<<std::endl;
     std::cout<<"hitboxMax do sphereObject: "<<sphereObject.getHitboxMax().x<<", "<<sphereObject.getHitboxMax().y<<", "<<sphereObject.getHitboxMax().z<<std::endl;
 
-    SceneObject rampObject("../../resources/objects/plane.obj");
+    SceneObject rampObject("../../resources/objects/plane.obj", "unique");
     rampObject.setObjectID(2);
     rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
     rampObject.translate(0.0f, -0.90f, -2.5f);
@@ -343,7 +373,7 @@ int main(int argc, char* argv[])
     //colisao ta dando errado pq ele ta considerando as coordenadas locais do objeto, nao as globais
     
 
-    SceneObject floorObject("../../resources/objects/plane.obj");
+    SceneObject floorObject("../../resources/objects/plane.obj", "unique");
     floorObject.setObjectID(3);
     floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
     floorObject.translate(0.0f, -2.0f, 0.4f);
@@ -419,14 +449,28 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         glm::vec4 playerPosition = player.position;
-        faustaoObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
-        faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
-        faustaoObject.rotateX(-2.35f);
-        faustaoObject.rotateY(-3.14f);
-        faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
-        faustaoObject.translate(1.0f, 2.3f, 0.0f);
-        faustaoObject.render(gpu_controller);
+        // faustaoObject.setModelMatrix(Matrices::Identity()); // reseta a matriz de modelagem do objeto pra ele não ficar acumulando transformações
+        // faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+        // faustaoObject.rotateX(-2.35f);
+        // faustaoObject.rotateY(-3.14f);
+        // faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        // faustaoObject.translate(1.0f, 2.3f, 0.0f);
+        // faustaoObject.render(gpu_controller);
+
+        for (auto &object : faustaoParts)
+        {
+            object.setModelMatrix(Matrices::Identity());
+            object.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+            object.rotateX(-2.35f);
+            object.rotateY(-3.14f);
+            object.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+            object.translate(1.0f, 2.3f, 0.0f);
+
+            object.render(gpu_controller);
+        }
+
         rampObject.render(gpu_controller);
+
         /*faustaoObject.render(gpu_controller);*/
 
         

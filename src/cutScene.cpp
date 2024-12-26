@@ -76,7 +76,7 @@ void CutScene::createSceneObjects() {
     // sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
     // addSceneObject(sphereObject);
 
-    SceneObject cowObject("../../resources/objects/cow.obj");
+    SceneObject cowObject("../../resources/objects/cow.obj", "unique");
     cowObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
     cowObject.setObjectID(3);
     addSceneObject(cowObject);

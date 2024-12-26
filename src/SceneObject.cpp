@@ -173,7 +173,19 @@ void SceneObject::initBuffers()
     glBindVertexArray(0);
 }
 
-SceneObject::SceneObject(const char *filename)
+SceneObject::SceneObject(const tinyobj::attrib_t &attrib, 
+                         const tinyobj::shape_t &shape, 
+                         const std::vector<tinyobj::material_t> &materials)
+{
+    this->attrib = attrib;
+    this->shapes.push_back(shape); // Only include this shape
+    this->materials = materials;
+
+    ComputeNormals();
+    initBuffers();
+}
+
+SceneObject::SceneObject(const char *filename, const char *flag)
 {
     std::string fullpath(filename);
     auto i = fullpath.find_last_of("/");
@@ -209,9 +221,12 @@ SceneObject::SceneObject(const char *filename)
         }
     }
 
-    ComputeNormals();
-    initBuffers();
-    calculateHitbox();
+    if (std::strcmp(flag, "unique") == 0)
+    {
+        ComputeNormals();
+        initBuffers();
+        calculateHitbox();
+    }
 }
 
 void SceneObject::render(GpuProgramController& gpuProgramController)
