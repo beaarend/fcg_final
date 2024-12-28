@@ -178,6 +178,7 @@ void SceneObject::initBuffers()
 
 SceneObject::SceneObject(const char *filename) 
 {
+    std::cout<<"carregando objeto: "<<filename<<std::endl;
     std::string fullpath(filename);
     auto i = fullpath.find_last_of("/");
     const char *basepath = NULL;
@@ -214,8 +215,8 @@ SceneObject::SceneObject(const char *filename)
 
     ComputeNormals();
     initBuffers();
-    std::cout << "Calculating hitbox" << std::endl;
-    this->hitbox= new AxisAlignedBoundingBox(attrib);
+      this->hitbox= new OrientedBoundingBox(attrib);
+    std::cout<<"Hitbox criada"<<std::endl;
 }
 
 void SceneObject::render(GpuProgramController& gpuProgramController)
@@ -250,48 +251,12 @@ bool SceneObject::getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal) {
 }
 
 bool SceneObject::checkCollision(SceneObject& other) {
-    auto hitboxMin = this->hitbox->getHitboxMin();
-    auto hitboxMax = this->hitbox->getHitboxMax();
-    auto otherHitboxMin = other.hitbox->getHitboxMin();
-    auto otherHitboxMax = other.hitbox->getHitboxMax();
-
-    // Print hitboxes for debugging
-    std::cout << "Hitbox min: " << hitboxMin.x << " " << hitboxMin.y << " " << hitboxMin.z
-              << " Hitbox max: " << hitboxMax.x << " " << hitboxMax.y << " " << hitboxMax.z << std::endl;
-    std::cout << "Other Hitbox min: " << otherHitboxMin.x << " " << otherHitboxMin.y << " " << otherHitboxMin.z
-              << " Other Hitbox max: " << otherHitboxMax.x << " " << otherHitboxMax.y << " " << otherHitboxMax.z << std::endl;
-
-    if (hitboxMin.x > hitboxMax.x) {
-        std::swap(hitboxMin.x, hitboxMax.x);
-    }
-    if (hitboxMin.y > hitboxMax.y) {
-        std::swap(hitboxMin.y, hitboxMax.y);
-    }
-    if (hitboxMin.z > hitboxMax.z) {
-        std::swap(hitboxMin.z, hitboxMax.z);
-    }
-
-    if (otherHitboxMin.x > otherHitboxMax.x) {
-        std::swap(otherHitboxMin.x, otherHitboxMax.x);
-    }
-    if (otherHitboxMin.y > otherHitboxMax.y) {
-        std::swap(otherHitboxMin.y, otherHitboxMax.y);
-    }
-    if (otherHitboxMin.z > otherHitboxMax.z) {
-        std::swap(otherHitboxMin.z, otherHitboxMax.z);
-    }
-
-    bool collisionX = hitboxMin.x < otherHitboxMax.x && hitboxMax.x > otherHitboxMin.x;
-    bool collisionY = hitboxMin.y < otherHitboxMax.y && hitboxMax.y > otherHitboxMin.y;
-    bool collisionZ = hitboxMin.z < otherHitboxMax.z && hitboxMax.z > otherHitboxMin.z;
-
-    if (collisionX) std::cout << "Collision on X axis because" << hitboxMin.x << " < " << otherHitboxMax.x << " and " << hitboxMax.x << " > " << otherHitboxMin.x << std::endl;
-    if (collisionY) std::cout << "Collision on Y axis because"<<hitboxMin.y<<" < "<<otherHitboxMax.y<<" and "<<hitboxMax.y<<" > "<<otherHitboxMin.y<<std::endl;
-    if (collisionZ) std::cout << "Collision on Z axis because" << hitboxMin.z << " < " << otherHitboxMax.z << " and " << hitboxMax.z << " > " << otherHitboxMin.z << std::endl;
-
-    return collisionX && collisionY && collisionZ;
+      return this->hitbox->checkCollision(other.getHitbox());
 }
 
+Hitbox* SceneObject::getHitbox(){
+  return this->hitbox;
+}
 
 void SceneObject::scale(const glm::vec3& scale) {
     model_matrix = Matrices::Scale(scale.x, scale.y, scale.z) * model_matrix;
@@ -330,6 +295,17 @@ void SceneObject::setObjectColor(glm::vec3 object_color){
 
 void SceneObject::resetModelMatrix(){
   model_matrix = Matrices::Identity();
+  HitboxType hitboxType = this->hitbox->getHitboxType();
   delete this->hitbox;
-  this->hitbox=new OrientedBoundingBox(attrib);
+  if(hitboxType == HitboxType::AABB){
+    this->hitbox = new AxisAlignedBoundingBox(attrib);
+  }
+  else if(hitboxType == HitboxType::OBB){
+    this->hitbox = new OrientedBoundingBox(attrib);
+  }
+}
+
+SceneObject::~SceneObject(){
+  std::cout<<"destruindo scene object"<<std::endl;
+  delete this->hitbox;
 }

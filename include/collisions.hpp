@@ -1,6 +1,12 @@
-
 #pragma once
 #include <glm/glm.hpp>
 
 
-bool checkCollision(const glm::vec3& sphereCenter, float sphereRadius, const glm::vec3& planePoint, const glm::vec3& planeNormal, float tolerance = 0.01f); 
+class Collisions {
+public:
+    static bool AABBsTest(const glm::vec3& min1, const glm::vec3& max1, const glm::vec3& min2, const glm::vec3& max2);
+    static bool OBBsTest(const glm::vec3& center1, const glm::vec3& halfSize1, const glm::vec3 axis1[3], const glm::vec3& center2, const glm::vec3& halfSize2, const glm::vec3 axis2[3]);
+  static bool TestOBBCollisionVertices(glm::vec3* verticesA, glm::vec3* verticesB);
+};
+
+

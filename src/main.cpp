@@ -300,37 +300,39 @@ int main(int argc, char* argv[])
     GpuProgramController gpu_controller(g_GpuProgramID);
     
     
-    SceneObject sphereObject("../../resources/objects/sphere.obj");
-    std::cout<<"testeee\n";
-    sphereObject.setObjectID(0);
-    sphereObject.translate(0.0f, -0.2f, 0.0f);
-    SceneObject bunnyObject("../../resources/objects/bunny.obj");
-    bunnyObject.setObjectID(1);
-    SceneObject faustaoObject("../../resources/objects/faustao.obj");
-    faustaoObject.setObjectID(6);
+    /*SceneObject sphereObject("../../resources/objects/sphere.obj");*/
+    /*sphereObject.setObjectID(0);*/
+    /*sphereObject.translate(0.0f, -0.2f, 0.0f);*/
+    /*SceneObject bunnyObject("../../resources/objects/bunny.obj");*/
+    /*bunnyObject.setObjectID(1);*/
+    /*std::cout<<"carregando FAUSTAO"<<std::endl;*/
+    SceneObject* faustaoObject=new SceneObject("../../resources/objects/faustao.obj");
+    faustaoObject->setObjectID(6);
 
-    /*faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));*/
+    /*faustaoObject->scale(glm::vec3(0.05f, 0.05f, 0.05f));*/
+    /*faustaoObject->rotateX(-2.35f);*/
 
 
-    SceneObject rampObject("../../resources/objects/plane.obj");
-    rampObject.setObjectID(2);
-    rampObject.scale(glm::vec3(2.0f, 1.0f, 3.0f));
-    rampObject.translate(0.0f, -0.90f, -2.5f);
-    rampObject.rotateX(ramp_angle_x);
-    rampObject.rotateY(ramp_angle_y);
-    rampObject.rotateZ(ramp_angle_z);
-    rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
+    std::cout<<"carregando RAMPA"<<std::endl;
+    SceneObject* rampObject= new SceneObject("../../resources/objects/plane.obj");
+    rampObject->setObjectID(2);
+    /*rampObject->scale(glm::vec3(2.0f, 1.0f, 3.0f));*/
+    /*rampObject.translate(0.0f, -0.90f, -2.5f);*/
+    /*rampObject.rotateX(ramp_angle_x);*/
+    /*rampObject.rotateY(ramp_angle_y);*/
+    /*rampObject.rotateZ(ramp_angle_z);*/
+    /*rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));*/
     
     glm::vec3 rampPoint, rampNormal;
-    if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {
+    if (!rampObject->getPlaneInfo(rampPoint, rampNormal)) {
         std::cerr << "Failed to get plane info" << std::endl;
     }
 
-    SceneObject floorObject("../../resources/objects/plane.obj");
-    floorObject.setObjectID(3);
-    floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
-    floorObject.translate(0.0f, -2.0f, 0.4f);
-    floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
+    /*SceneObject floorObject("../../resources/objects/plane.obj");*/
+    /*floorObject.setObjectID(3);*/
+    /*floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));*/
+    /*floorObject.translate(0.0f, -2.0f, 0.4f);*/
+    /*floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));*/
 
     if ( argc > 1 )
     {
@@ -403,21 +405,21 @@ int main(int argc, char* argv[])
         #define PLANE  2
 
         glm::vec4 playerPosition = player.position;
-        faustaoObject.resetModelMatrix();
-        faustaoObject.rotateX(-2.35f);
-        /*faustaoObject.rotateX(-1.57f);*/
-        faustaoObject.rotateY(-3.14f);
-        faustaoObject.translate(1.0f, 2.3f, 0.0f);
-        faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
-        /*faustaoObject.translate(0.0f,-2.9f,0.0f); // abaixa o objeto*/
-        faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+        faustaoObject->resetModelMatrix();
+        /*faustaoObject->rotateX(-2.35f);*/
+        /*faustaoObject->rotateX(-1.57f);*/
+        /*faustaoObject->rotateY(-3.14f);*/
+        /*faustaoObject->translate(1.0f, 2.3f, 0.0f);*/
+        faustaoObject->scale(glm::vec3(0.05f, 0.05f, 0.05f));
+        faustaoObject->translate(0.0f,-2.0f,0.0f); // abaixa o objeto
+        faustaoObject->translate(playerPosition.x, playerPosition.y, playerPosition.z);
         
-        rampObject.render(gpu_controller);
-        faustaoObject.render(gpu_controller);
+        rampObject->render(gpu_controller);
+        faustaoObject->render(gpu_controller);
 
-        /*bool coll=faustaoObject.checkCollision(rampObject);*/
-        /*if(coll)*/
-        /*  std::cout<<"colidiu"<<std::endl;*/
+        bool coll=faustaoObject->checkCollision(*rampObject);
+        if(coll)
+          std::cout<<"colidiu"<<std::endl;
 
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do

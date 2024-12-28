@@ -5,10 +5,39 @@
 #include <gpuProgramController.h>
 #include <glm/glm.hpp>
 #include <tiny_obj_loader.h>
+#include <collisions.hpp>
 
+
+glm::vec3 Hitbox::getHitboxMin(){
+  return vertices[0];
+}
+
+glm::vec3 Hitbox::getHitboxMax(){
+  return vertices[6];
+}
+glm::vec3* Hitbox::getVertices(){
+    //convertendo o vetor de vertices para um array de vertices
+    int size = vertices.size();
+    glm::vec3* vertices = new glm::vec3[size];
+    for(int i=0;i<size;i++){
+        vertices[i] = this->vertices[i];
+    }
+    return vertices;
+}
+
+HitboxType Hitbox::getHitboxType(){
+  return hitboxType;
+}
+
+void Hitbox::printVertices(){
+  for(int i=0;i<8;i++){
+    std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
+  }
+}
 
 AxisAlignedBoundingBox::AxisAlignedBoundingBox(tinyobj::attrib_t& attrib){
   calculateHitbox(attrib);
+  this->hitboxType = HitboxType::AABB;
   glm::vec3 vertices[8] = {
       hitboxMin,
       glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
@@ -52,15 +81,6 @@ void AxisAlignedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
     for(int i=0;i<8;i++){
       std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
     }
-  /*if(hitboxMin.x > hitboxMax.x){*/
-  /*  std::swap(hitboxMin.x, hitboxMax.x);*/
-  /*}*/
-  /*if(hitboxMin.y > hitboxMax.y){*/
-  /*  std::swap(hitboxMin.y, hitboxMax.y);*/
-  /*}*/
-  /*if(hitboxMin.z > hitboxMax.z){*/
-  /*  std::swap(hitboxMin.z, hitboxMax.z);*/
-  /*}*/
 }
 
 void AxisAlignedBoundingBox::resetVertices(){
@@ -128,25 +148,22 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
     glDeleteBuffers(1, &EBO);
 }
 
-glm::vec3 Hitbox::getHitboxMin(){
-  return vertices[0];
-}
 
-glm::vec3 Hitbox::getHitboxMax(){
-  return vertices[6];
-}
-glm::vec3* Hitbox::getVertices(){
-    //convertendo o vetor de vertices para um array de vertices
-    int size = vertices.size();
-    glm::vec3* vertices = new glm::vec3[size];
-    for(int i=0;i<size;i++){
-        vertices[i] = this->vertices[i];
-    }
-    return vertices;
+bool AxisAlignedBoundingBox::checkCollision(Hitbox* hitbox){
+  hitboxType = hitbox->getHitboxType();
+  std::cout<<"testando colisoes"<<std::endl;
+  //dependendo do tipo de hitbox, a colisao sera feita de uma forma
+  if(hitboxType == HitboxType::AABB){
+    return Collisions::AABBsTest(this->getHitboxMin(), this->getHitboxMax(), hitbox->getHitboxMin(), hitbox->getHitboxMax());
   }
+  else{
+    throw std::invalid_argument("Hitbox type not supported");
+  }
+};
 
 OrientedBoundingBox::OrientedBoundingBox(tinyobj::attrib_t& attrib){
   calculateHitbox(attrib);
+  this->hitboxType = HitboxType::OBB;
   glm::vec3 vertices[8] = {
       hitboxMin,
       glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
@@ -182,21 +199,30 @@ void OrientedBoundingBox::calculateHitbox(tinyobj::attrib_t& attrib){
 
 void OrientedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
     //parte para atualizar os vertices (para desenhar a hitbox)
-    /*std::cout<<"vertices antes de atualizar"<<std::endl;*/
-    /*for(int i=0;i<8;i++){*/
-    /*  std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;*/
-    /*}*/
+    std::cout<<"chamando update hitbox"<<std::endl;
+    std::cout<<"Model matrix no Update Hitbox: "<<std::endl;
+    for(int i=0;i<4;i++){
+      for(int j=0;j<4;j++){
+        std::cout<<model_matrix[i][j]<<" ";
+      }
+      std::cout<<std::endl;
+    }
     resetVertices();
     for(int i=0; i<8; i++){
         vertices[i] = model_matrix * glm::vec4(vertices[i], 1.0f);
     }
-   /*std::cout<<"vertices depois de atualizar"<<std::endl;*/
-    /*for(int i=0;i<8;i++){*/
-    /*  std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;*/
-    /*}*/
 
-    //parte para atualizar os dados logicos da hitbox
-    center = glm::vec3(model_matrix * glm::vec4(center, 1.0f)); 
+
+    std::cout<<"Axis antes de atualizar"<<std::endl;
+    for(int i=0;i<3;i++){
+      std::cout<<axis[i].x<<" "<<axis[i].y<<" "<<axis[i].z<<std::endl;
+    }
+
+    glm::vec3 hitboxMax=this->getHitboxMax();  
+    glm::vec3 hitboxMin=this->getHitboxMin(); 
+    halfSize = (hitboxMax - hitboxMin) / 2.0f;
+    center = (hitboxMin + hitboxMax) / 2.0f;
+
     axis[0] = glm::normalize(glm::vec3(model_matrix * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f)));
     axis[1] = glm::normalize(glm::vec3(model_matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f)));
     axis[2] = glm::normalize(glm::vec3(model_matrix * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)));
@@ -266,4 +292,30 @@ void OrientedBoundingBox::draw(GpuProgramController& gpuProgramController){
     glDeleteBuffers(1, &EBO);
 }
 
+glm::vec3 OrientedBoundingBox::getCenter(){
+  return center;
+}
 
+glm::vec3 OrientedBoundingBox::getHalfSize(){
+  return halfSize;
+}
+
+glm::vec3* OrientedBoundingBox::getAxis(){
+  return axis;
+}
+
+bool OrientedBoundingBox::checkCollision(Hitbox* hitbox){
+  HitboxType hitboxType = hitbox->getHitboxType();
+  if(hitboxType == HitboxType::OBB){
+    std::cout<<"testando colisao entre OBBs"<<std::endl;
+    this->printVertices();
+    std::cout<<"-------------------"<<std::endl;  
+    hitbox->printVertices();
+    /*return Collisions::OBBsTest(center, halfSize, axis, ((OrientedBoundingBox*)hitbox)->getCenter(), ((OrientedBoundingBox*)hitbox)->getHalfSize(), ((OrientedBoundingBox*)hitbox)->getAxis());*/
+    return Collisions::TestOBBCollisionVertices(this->getVertices(), hitbox->getVertices());
+  }
+  else {
+    throw std::invalid_argument("Hitbox type not supported");
+  }
+
+}

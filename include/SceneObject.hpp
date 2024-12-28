@@ -26,6 +26,7 @@ private:
 
 public:
     SceneObject(const char* filename);
+    ~SceneObject();
     int object_id;
     GLuint vertex_array_object_id;
     glm::mat4 model_matrix=Matrices::Identity();
@@ -49,6 +50,7 @@ public:
     void setObjectID(int object_id);
     void setModelMatrix(glm::mat4 model_matrix);
     void setObjectColor(glm::vec3 object_color);
+    Hitbox* getHitbox();
 
     bool getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal);
 };

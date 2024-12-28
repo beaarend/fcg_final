@@ -4,6 +4,10 @@
 #include <tiny_obj_loader.h>
 #include <gpuProgramController.h>
 
+enum class HitboxType{
+  AABB,
+  OBB
+};
 
 //classe base para as hitboxes
 class Hitbox{
@@ -12,10 +16,10 @@ protected:
   glm::vec3 hitboxMin;
   glm::vec3 hitboxMax;
   /*glm::vec3 vertices[8];*/
+  HitboxType hitboxType;
   std::vector<glm::vec3> vertices;
 
 public:
-  /*Hitbox(tinyobj::attrib_t& attrib);*/
   virtual ~Hitbox() = default;
   virtual void calculateHitbox(tinyobj::attrib_t& attrib) = 0;
   virtual void UpdateHitbox(glm::mat4 model_matrix) = 0;
@@ -24,6 +28,9 @@ public:
   glm::vec3 getHitboxMin();
   glm::vec3 getHitboxMax();
   glm::vec3* getVertices();
+  HitboxType getHitboxType(); 
+  virtual bool checkCollision(Hitbox* hitbox) = 0;
+  void printVertices();
 };
 
 class AxisAlignedBoundingBox: public Hitbox{
@@ -33,12 +40,13 @@ public:
   void UpdateHitbox(glm::mat4 model_matrix) override;
   void resetVertices() override;
   void draw(GpuProgramController& gpuProgramController) override;
+  bool checkCollision(Hitbox* hitbox) override;
 };
 
 class OrientedBoundingBox: public Hitbox{
 private:
   glm::vec3 center;//ponto central do OOBB
-  glm::vec3 halfSize;//metade do tamanho do OOBB
+  glm::vec3 halfSize;//metade do tamanho do OOBB (so atualiza no scale, nao no translate)
   glm::vec3 axis[3];//eixos do OOBB
 public:
   OrientedBoundingBox(tinyobj::attrib_t& attrib);
@@ -46,4 +54,9 @@ public:
   void UpdateHitbox(glm::mat4 model_matrix) override;
   void draw(GpuProgramController& gpuProgramController) override;
   void resetVertices() override;
+  bool checkCollision(Hitbox* hitbox) override;
+  glm::vec3 getCenter();
+  glm::vec3 getHalfSize();
+  glm::vec3* getAxis();
+
 };
