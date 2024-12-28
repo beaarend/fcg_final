@@ -218,6 +218,8 @@ GLint g_model_uniform;
 GLint g_view_uniform;
 GLint g_projection_uniform;
 GLint g_object_id_uniform;
+GLint g_bbox_min_uniform;
+GLint g_bbox_max_uniform;
 
 #define WINDOW_HEIGHT 600
 #define WINDOW_WIDTH 800
@@ -232,6 +234,12 @@ enum GameState { CUTSCENE, GAMEPLAY };
 GameState gameState = CUTSCENE;
 
 #include "cutScene.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+// Número de texturas carregadas pela função LoadTextureImage()
+GLuint g_NumLoadedTextures = 0;
+void LoadTextureImage(const char* filename); // Função que carrega imagens de textura
 
 int main(int argc, char* argv[])
 {
@@ -299,40 +307,71 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
     GpuProgramController gpu_controller(g_GpuProgramID);
     
+    SceneObject sphereObject("../../resources/objects/sphere.obj", "unique");
+    sphereObject.setObjectID(0);
+    sphereObject.translate(0.0f, -0.2f, 0.0f);
+    SceneObject bunnyObject("../../resources/objects/bunny.obj", "unique");
+    bunnyObject.setObjectID(1);
+
+    // SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj");
+    // faustaoObject.setObjectID(6);
+
+    std::vector<SceneObject> faustaoParts;
+    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple");
+
+    #define FAUSTAO_HAIR 4
+    #define FAUSTAO_FACE 5
+    #define FAUSTAO_CLOTHES 6
     
-    /*SceneObject sphereObject("../../resources/objects/sphere.obj");*/
-    /*sphereObject.setObjectID(0);*/
-    /*sphereObject.translate(0.0f, -0.2f, 0.0f);*/
-    /*SceneObject bunnyObject("../../resources/objects/bunny.obj");*/
-    /*bunnyObject.setObjectID(1);*/
-    /*std::cout<<"carregando FAUSTAO"<<std::endl;*/
-    SceneObject* faustaoObject=new SceneObject("../../resources/objects/faustao.obj");
-    faustaoObject->setObjectID(6);
+    // Iterate over shapes in the loaded object
+    for (const auto &shape : faustaoObject.shapes)
+    {
+        SceneObject individualObject(faustaoObject.attrib, shape, faustaoObject.materials);
 
-    /*faustaoObject->scale(glm::vec3(0.05f, 0.05f, 0.05f));*/
-    /*faustaoObject->rotateX(-2.35f);*/
+        if (shape.name == "Object.1")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_HAIR << "to FAUSTAO_HAIR" << std::endl;
+            individualObject.setObjectID(FAUSTAO_HAIR);
+        }
+        else if (shape.name == "Object.2")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_FACE << "to FAUSTAO_FACE" << std::endl;
+            individualObject.setObjectID(FAUSTAO_FACE);
+        }
+        else if (shape.name == "Object.3")
+        {
+            std::cout << "Setting object id = " << FAUSTAO_CLOTHES << "to FAUSTAO_CLOTHES" << std::endl;
+            individualObject.setObjectID(FAUSTAO_CLOTHES);
+        }
+
+        faustaoParts.push_back(std::move(individualObject));
+    }
+
+    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
+    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
+    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
 
 
-    std::cout<<"carregando RAMPA"<<std::endl;
-    SceneObject* rampObject= new SceneObject("../../resources/objects/plane.obj");
-    rampObject->setObjectID(2);
-    /*rampObject->scale(glm::vec3(2.0f, 1.0f, 3.0f));*/
-    /*rampObject.translate(0.0f, -0.90f, -2.5f);*/
-    /*rampObject.rotateX(ramp_angle_x);*/
-    /*rampObject.rotateY(ramp_angle_y);*/
-    /*rampObject.rotateZ(ramp_angle_z);*/
-    /*rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));*/
+    SceneObject rampObject("../../resources/objects/plane.obj", "unique");
+    rampObject.setObjectID(2);
+    rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
+    rampObject.translate(0.0f, -0.90f, -2.5f);
+    rampObject.rotateX(ramp_angle_x);
+    rampObject.rotateY(ramp_angle_y);
+    rampObject.rotateZ(ramp_angle_z);
+    rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
     
     glm::vec3 rampPoint, rampNormal;
-    if (!rampObject->getPlaneInfo(rampPoint, rampNormal)) {
+    if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {
         std::cerr << "Failed to get plane info" << std::endl;
     }
 
-    /*SceneObject floorObject("../../resources/objects/plane.obj");*/
-    /*floorObject.setObjectID(3);*/
-    /*floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));*/
-    /*floorObject.translate(0.0f, -2.0f, 0.4f);*/
-    /*floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));*/
+
+    SceneObject floorObject("../../resources/objects/plane.obj", "unique");
+    floorObject.setObjectID(3);
+    floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
+    floorObject.translate(0.0f, -2.0f, 0.4f);
+    floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
 
     if ( argc > 1 )
     {
@@ -399,28 +438,29 @@ int main(int argc, char* argv[])
             player.Update(delta_time);
 
         }
-
         #define SPHERE 0
         #define BUNNY  1
         #define PLANE  2
 
         glm::vec4 playerPosition = player.position;
-        faustaoObject->resetModelMatrix();
-        /*faustaoObject->rotateX(-2.35f);*/
-        /*faustaoObject->rotateX(-1.57f);*/
-        /*faustaoObject->rotateY(-3.14f);*/
-        /*faustaoObject->translate(1.0f, 2.3f, 0.0f);*/
-        faustaoObject->scale(glm::vec3(0.05f, 0.05f, 0.05f));
-        faustaoObject->translate(0.0f,-2.0f,0.0f); // abaixa o objeto
-        faustaoObject->translate(playerPosition.x, playerPosition.y, playerPosition.z);
-        
-        rampObject->render(gpu_controller);
-        faustaoObject->render(gpu_controller);
 
-        bool coll=faustaoObject->checkCollision(*rampObject);
-        if(coll)
-          std::cout<<"colidiu"<<std::endl;
+        for (auto &object : faustaoParts)
+        {
+            object.resetModelMatrix();
+            object.scale(glm::vec3(0.05f, 0.05f, 0.05f));
+            /*object.rotateX(-2.35f);*/
+            object.rotateX(-1.57f);
+            /*object.rotateY(-3.14f);*/
+            object.translate(playerPosition.x, playerPosition.y, playerPosition.z);
+            object.translate(1.0f, 2.3f, 0.0f);
+            bool coll=object.checkCollision(rampObject);
+            if(coll)
+              std::cout<<"colidiu"<<std::endl;
 
+            object.render(gpu_controller);
+        }
+
+        rampObject.render(gpu_controller);
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.
@@ -443,6 +483,58 @@ int main(int argc, char* argv[])
 
     // Fim do programa
     return 0;
+}
+
+// Função que carrega uma imagem para ser utilizada como textura
+void LoadTextureImage(const char* filename)
+{
+    printf("Carregando imagem \"%s\"... ", filename);
+
+    // Primeiro fazemos a leitura da imagem do disco
+    stbi_set_flip_vertically_on_load(true);
+    int width;
+    int height;
+    int channels;
+    unsigned char *data = stbi_load(filename, &width, &height, &channels, 3);
+
+    if ( data == NULL )
+    {
+        fprintf(stderr, "ERROR: Cannot open image file \"%s\".\n", filename);
+        std::exit(EXIT_FAILURE);
+    }
+
+    printf("OK (%dx%d).\n", width, height);
+
+    // Agora criamos objetos na GPU com OpenGL para armazenar a textura
+    GLuint texture_id;
+    GLuint sampler_id;
+    glGenTextures(1, &texture_id);
+    glGenSamplers(1, &sampler_id);
+
+    // Veja slides 95-96 do documento Aula_20_Mapeamento_de_Texturas.pdf
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Parâmetros de amostragem da textura.
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glSamplerParameteri(sampler_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Agora enviamos a imagem lida do disco para a GPU
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+    GLuint textureunit = g_NumLoadedTextures;
+    glActiveTexture(GL_TEXTURE0 + textureunit);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindSampler(textureunit, sampler_id);
+
+    stbi_image_free(data);
+
+    g_NumLoadedTextures += 1;
 }
 
 // Função que desenha um objeto armazenado em g_VirtualScene. Veja definição
@@ -492,6 +584,14 @@ void LoadShadersFromFiles()
     g_view_uniform       = glGetUniformLocation(g_GpuProgramID, "view"); // Variável da matriz "view" em shader_vertex.glsl
     g_projection_uniform = glGetUniformLocation(g_GpuProgramID, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
     g_object_id_uniform  = glGetUniformLocation(g_GpuProgramID, "object_id"); // Variável "object_id" em shader_fragment.glsl
+    g_bbox_min_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_min");
+    g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
+
+    glUseProgram(g_GpuProgramID);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES
+    glUseProgram(0);
 }
 
 // Função que pega a matriz M e guarda a mesma no topo da pilha
@@ -708,6 +808,8 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel* model)
     // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
 }
+
+
 
 // Carrega um Vertex Shader de um arquivo GLSL. Veja definição de LoadShader() abaixo.
 GLuint LoadShader_Vertex(const char* filename)

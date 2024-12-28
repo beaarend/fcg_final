@@ -16,7 +16,6 @@ glm::vec3 Hitbox::getHitboxMax(){
   return vertices[6];
 }
 glm::vec3* Hitbox::getVertices(){
-    //convertendo o vetor de vertices para um array de vertices
     int size = vertices.size();
     glm::vec3* vertices = new glm::vec3[size];
     for(int i=0;i<size;i++){

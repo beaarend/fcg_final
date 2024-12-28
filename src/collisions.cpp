@@ -3,7 +3,6 @@
 #include <vector>
 #include "matrices.h"
 
-// Função auxiliar para converter glm::vec3 para glm::vec4
 glm::vec4 vec3ToVec4(const glm::vec3& v, float w = 0.0f) {
     return glm::vec4(v, w);
 }
@@ -50,7 +49,6 @@ bool GetSeparatingPlane(
     return distance > (projection1 + projection2);
 }
 
-// Função para verificar colisão entre dois OBBs
 bool Collisions::OBBsTest(
     const glm::vec3& center1, const glm::vec3& halfSize1, const glm::vec3 axis1[3],
     const glm::vec3& center2, const glm::vec3& halfSize2, const glm::vec3 axis2[3]
@@ -64,10 +62,8 @@ bool Collisions::OBBsTest(
       std::cout<<"axis1: "<<axis1[i].x<<" "<<axis1[i].y<<" "<<axis1[i].z<<std::endl;
       std::cout<<"axis2: "<<axis2[i].x<<" "<<axis2[i].y<<" "<<axis2[i].z<<std::endl;
     }
-    // Vetor de posição relativa entre os dois OBBs
     glm::vec3 relativePos = center2 - center1;
 
-    // Teste para os 15 planos separadores
     if (GetSeparatingPlane(relativePos, axis1[0], halfSize1, axis1, halfSize2, axis2) ||
         GetSeparatingPlane(relativePos, axis1[1], halfSize1, axis1, halfSize2, axis2) ||
         GetSeparatingPlane(relativePos, axis1[2], halfSize1, axis1, halfSize2, axis2) ||

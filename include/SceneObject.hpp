@@ -2,6 +2,7 @@
 #include <tiny_obj_loader.h>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <glad/glad.h>
 #include<Hitbox.hpp>
 #include <glm/glm.hpp>
@@ -12,12 +13,12 @@
 class SceneObject
 {
 private:
-  tinyobj::attrib_t attrib;
-  std::vector<tinyobj::shape_t> shapes;
-  std::vector<tinyobj::material_t> materials;
+  // tinyobj::attrib_t attrib;
+  // std::vector<tinyobj::shape_t> shapes;
+  // std::vector<tinyobj::material_t> materials;
   void initBuffers();
   void ComputeNormals();
-  void calculateHitbox();
+  /*void calculateHitbox();*/
   glm::vec3 object_color=glm::vec3(0.5f,0.5f,0.5f);
   Hitbox* hitbox=nullptr;
   /*glm::vec3 hitboxMin;*/
@@ -25,8 +26,16 @@ private:
 
 
 public:
-    SceneObject(const char* filename);
-    ~SceneObject();
+    SceneObject(const char* filename, const char *flag);
+
+    SceneObject(const tinyobj::attrib_t &attrib, 
+                         const tinyobj::shape_t &shape, 
+                         const std::vector<tinyobj::material_t> &materials);
+
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials; 
+
     int object_id;
     GLuint vertex_array_object_id;
     glm::mat4 model_matrix=Matrices::Identity();

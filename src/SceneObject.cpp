@@ -6,6 +6,12 @@
 #include <glm/glm.hpp>
 #include <matrices.h>
 
+struct ShapeRenderData {
+    size_t first_index;
+    size_t num_indices;
+};
+
+std::vector<ShapeRenderData> shape_render_data;
 
 void SceneObject::ComputeNormals()
 {
@@ -78,7 +84,6 @@ void SceneObject::initBuffers()
         size_t first_index = indices.size();
         size_t num_triangles = shapes[shape].mesh.num_face_vertices.size();
 
-
         for (size_t triangle = 0; triangle < num_triangles; ++triangle)
         {
             assert(shapes[shape].mesh.num_face_vertices[triangle] == 3);
@@ -86,28 +91,25 @@ void SceneObject::initBuffers()
             for (size_t vertex = 0; vertex < 3; ++vertex)
             {
                 tinyobj::index_t idx = shapes[shape].mesh.indices[3 * triangle + vertex];
-
-                indices.push_back(first_index + 3 * triangle + vertex);
+                indices.push_back(indices.size());
 
                 const float vx = attrib.vertices[3 * idx.vertex_index + 0];
                 const float vy = attrib.vertices[3 * idx.vertex_index + 1];
                 const float vz = attrib.vertices[3 * idx.vertex_index + 2];
-
-                model_coefficients.push_back(vx);   
-                model_coefficients.push_back(vy);   
-                model_coefficients.push_back(vz);   
-                model_coefficients.push_back(1.0f); 
-
+                model_coefficients.push_back(vx);
+                model_coefficients.push_back(vy);
+                model_coefficients.push_back(vz);
+                model_coefficients.push_back(1.0f);
 
                 if (idx.normal_index != -1)
                 {
                     const float nx = attrib.normals[3 * idx.normal_index + 0];
                     const float ny = attrib.normals[3 * idx.normal_index + 1];
                     const float nz = attrib.normals[3 * idx.normal_index + 2];
-                    normal_coefficients.push_back(nx);   
-                    normal_coefficients.push_back(ny);   
-                    normal_coefficients.push_back(nz);   
-                    normal_coefficients.push_back(0.0f); 
+                    normal_coefficients.push_back(nx);
+                    normal_coefficients.push_back(ny);
+                    normal_coefficients.push_back(nz);
+                    normal_coefficients.push_back(0.0f);
                 }
 
                 if (idx.texcoord_index != -1)
@@ -121,10 +123,7 @@ void SceneObject::initBuffers()
         }
 
         size_t last_index = indices.size() - 1;
-
-        this->first_index = first_index;
-        this->num_indices = last_index - first_index + 1;
-        this->vertex_array_object_id = vertex_array_object_id;
+        shape_render_data.push_back({first_index, last_index - first_index + 1});
     }
 
     GLuint VBO_model_coefficients_id;
@@ -176,7 +175,20 @@ void SceneObject::initBuffers()
     glBindVertexArray(0);
 }
 
-SceneObject::SceneObject(const char *filename) 
+SceneObject::SceneObject(const tinyobj::attrib_t &attrib, 
+                         const tinyobj::shape_t &shape, 
+                         const std::vector<tinyobj::material_t> &materials)
+{
+    this->attrib = attrib;
+    this->shapes.push_back(shape); // Only include this shape
+    this->materials = materials;
+
+    ComputeNormals();
+    initBuffers();
+    this->hitbox = new AxisAlignedBoundingBox(this->attrib);
+}
+
+SceneObject::SceneObject(const char *filename, const char *flag)
 {
     std::cout<<"carregando objeto: "<<filename<<std::endl;
     std::string fullpath(filename);
@@ -213,16 +225,22 @@ SceneObject::SceneObject(const char *filename)
         }
     }
 
-    ComputeNormals();
-    initBuffers();
-      this->hitbox= new OrientedBoundingBox(attrib);
-    std::cout<<"Hitbox criada"<<std::endl;
+    if (std::strcmp(flag, "unique") == 0)
+    {
+        ComputeNormals();
+        initBuffers();
+        this->hitbox = new AxisAlignedBoundingBox(attrib);
+    }
 }
 
 void SceneObject::render(GpuProgramController& gpuProgramController)
 {
-    gpuProgramController.DrawObject(vertex_array_object_id, model_matrix,this->object_id,this->object_color);
-    glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, (void *)(first_index * sizeof(GLuint)));
+    glBindVertexArray(vertex_array_object_id);
+    for (const auto &shape : shape_render_data)
+    {
+        gpuProgramController.DrawObject(vertex_array_object_id, model_matrix, object_id, object_color);
+        glDrawElements(GL_TRIANGLES, shape.num_indices, GL_UNSIGNED_INT, (void *)(shape.first_index * sizeof(GLuint)));
+    }
     glBindVertexArray(0);
     this->hitbox->draw(gpuProgramController);
 }
@@ -303,9 +321,4 @@ void SceneObject::resetModelMatrix(){
   else if(hitboxType == HitboxType::OBB){
     this->hitbox = new OrientedBoundingBox(attrib);
   }
-}
-
-SceneObject::~SceneObject(){
-  std::cout<<"destruindo scene object"<<std::endl;
-  delete this->hitbox;
 }
