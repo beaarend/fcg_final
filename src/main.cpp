@@ -299,7 +299,9 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
     GpuProgramController gpu_controller(g_GpuProgramID);
     
+    
     SceneObject sphereObject("../../resources/objects/sphere.obj");
+    std::cout<<"testeee\n";
     sphereObject.setObjectID(0);
     sphereObject.translate(0.0f, -0.2f, 0.0f);
     SceneObject bunnyObject("../../resources/objects/bunny.obj");
@@ -315,8 +317,8 @@ int main(int argc, char* argv[])
     rampObject.scale(glm::vec3(2.0f, 1.0f, 3.0f));
     rampObject.translate(0.0f, -0.90f, -2.5f);
     rampObject.rotateX(ramp_angle_x);
-    /*rampObject.rotateY(ramp_angle_y);*/
-    /*rampObject.rotateZ(ramp_angle_z);*/
+    rampObject.rotateY(ramp_angle_y);
+    rampObject.rotateZ(ramp_angle_z);
     rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
     
     glm::vec3 rampPoint, rampNormal;
@@ -403,10 +405,11 @@ int main(int argc, char* argv[])
         glm::vec4 playerPosition = player.position;
         faustaoObject.resetModelMatrix();
         faustaoObject.rotateX(-2.35f);
+        /*faustaoObject.rotateX(-1.57f);*/
         faustaoObject.rotateY(-3.14f);
         faustaoObject.translate(1.0f, 2.3f, 0.0f);
         faustaoObject.scale(glm::vec3(0.05f, 0.05f, 0.05f));
-        faustaoObject.translate(0.0f,-2.9f,0.0f); // abaixa o objeto
+        /*faustaoObject.translate(0.0f,-2.9f,0.0f); // abaixa o objeto*/
         faustaoObject.translate(playerPosition.x, playerPosition.y, playerPosition.z);
         
         rampObject.render(gpu_controller);

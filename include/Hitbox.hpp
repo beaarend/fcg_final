@@ -1,20 +1,49 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <vector>
 #include <tiny_obj_loader.h>
 #include <gpuProgramController.h>
+
+
+//classe base para as hitboxes
 class Hitbox{
-private:
+protected:
+  //servem para desenhar a hitbox
   glm::vec3 hitboxMin;
   glm::vec3 hitboxMax;
-  glm::vec3 vertices[8];
+  /*glm::vec3 vertices[8];*/
+  std::vector<glm::vec3> vertices;
 
 public:
-  Hitbox(tinyobj::attrib_t& attrib);
-  void calculateHitbox(tinyobj::attrib_t& attrib);
-  void UpdateHitbox(glm::mat4 model_matrix);
+  /*Hitbox(tinyobj::attrib_t& attrib);*/
+  virtual ~Hitbox() = default;
+  virtual void calculateHitbox(tinyobj::attrib_t& attrib) = 0;
+  virtual void UpdateHitbox(glm::mat4 model_matrix) = 0;
+  virtual void draw(GpuProgramController& gpuProgramController) = 0;
+  virtual void resetVertices()=0;
   glm::vec3 getHitboxMin();
   glm::vec3 getHitboxMax();
   glm::vec3* getVertices();
-  void resetVertices();
-  void draw(GpuProgramController& gpuProgramController);
+};
+
+class AxisAlignedBoundingBox: public Hitbox{
+public:
+  AxisAlignedBoundingBox(tinyobj::attrib_t& attrib);
+  void calculateHitbox(tinyobj::attrib_t& attrib) override;
+  void UpdateHitbox(glm::mat4 model_matrix) override;
+  void resetVertices() override;
+  void draw(GpuProgramController& gpuProgramController) override;
+};
+
+class OrientedBoundingBox: public Hitbox{
+private:
+  glm::vec3 center;//ponto central do OOBB
+  glm::vec3 halfSize;//metade do tamanho do OOBB
+  glm::vec3 axis[3];//eixos do OOBB
+public:
+  OrientedBoundingBox(tinyobj::attrib_t& attrib);
+  void calculateHitbox(tinyobj::attrib_t& attrib) override;
+  void UpdateHitbox(glm::mat4 model_matrix) override;
+  void draw(GpuProgramController& gpuProgramController) override;
+  void resetVertices() override;
 };
