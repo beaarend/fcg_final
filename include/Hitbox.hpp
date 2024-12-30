@@ -6,7 +6,8 @@
 
 enum class HitboxType{
   AABB,
-  OBB
+  OBB,
+  SPHERE
 };
 
 //classe base para as hitboxes
@@ -59,4 +60,20 @@ public:
   glm::vec3 getHalfSize();
   glm::vec3* getAxis();
 
+};
+
+
+class SphereHitbox: public Hitbox{
+private:
+  float radius;
+  glm::vec3 center;
+public:
+  SphereHitbox(tinyobj::attrib_t& attrib);
+  void calculateHitbox(tinyobj::attrib_t& attrib) override;
+  void UpdateHitbox(glm::mat4 model_matrix) override;
+  void draw(GpuProgramController& gpuProgramController) override;
+  void resetVertices() override;
+  bool checkCollision(Hitbox* hitbox) override;
+  float getRadius();
+  glm::vec3 getCenter();
 };

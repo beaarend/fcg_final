@@ -179,3 +179,8 @@ bool Collisions::TestOBBCollisionVertices(glm::vec3* verticesA, glm::vec3* verti
     // Se nenhuma separação foi encontrada, os OBBs colidem
     return true;
 }
+
+bool Collisions::SpheresTest(const glm::vec3& center1, float radius1, const glm::vec3& center2, float radius2) {
+    float distance = glm::distance(center1, center2);
+    return distance < radius1 + radius2;
+}

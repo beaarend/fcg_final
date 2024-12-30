@@ -185,7 +185,7 @@ SceneObject::SceneObject(const tinyobj::attrib_t &attrib,
 
     ComputeNormals();
     initBuffers();
-    this->hitbox = new AxisAlignedBoundingBox(this->attrib);
+    this->hitbox = new SphereHitbox(this->attrib);
 }
 
 SceneObject::SceneObject(const char *filename, const char *flag)

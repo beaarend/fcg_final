@@ -446,17 +446,17 @@ int main(int argc, char* argv[])
 
         for (auto &object : faustaoParts)
         {
-            object.resetModelMatrix();
-            object.scale(glm::vec3(0.05f, 0.05f, 0.05f));
-            /*object.rotateX(-2.35f);*/
-            object.rotateX(-1.57f);
-            /*object.rotateY(-3.14f);*/
-            object.translate(playerPosition.x, playerPosition.y, playerPosition.z);
-            object.translate(1.0f, 2.3f, 0.0f);
-            bool coll=object.checkCollision(rampObject);
-            if(coll)
-              std::cout<<"colidiu"<<std::endl;
-
+            /*object.resetModelMatrix();*/
+            /*object.scale(glm::vec3(0.05f, 0.05f, 0.05f));*/
+            /*/*object.rotateX(-2.35f);*/
+            /*object.rotateX(-1.57f);*/
+            /*/*object.rotateY(-3.14f);*/
+            /*object.translate(playerPosition.x, playerPosition.y, playerPosition.z);*/
+            /*object.translate(1.0f, 2.3f, 0.0f);*/
+            /*bool coll=object.checkCollision(rampObject);*/
+            /*if(coll)*/
+            /*  std::cout<<"colidiu"<<std::endl;*/
+            /**/
             object.render(gpu_controller);
         }
 
