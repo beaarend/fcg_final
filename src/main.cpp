@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
     LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
     LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
-
+    //LoadTextureImage("../../resources/objects/ObsidianCube.png"); // texture03
 
     SceneObject rampObject("../../resources/objects/plane.obj", "unique");
     rampObject.setObjectID(2);
@@ -477,6 +477,8 @@ int main(int argc, char* argv[])
         glfwSwapBuffers(window);
 
         glfwPollEvents();
+
+        
     }
 
     // Finalizamos o uso dos recursos do sistema operacional
@@ -532,6 +534,11 @@ void LoadTextureImage(const char* filename)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindSampler(textureunit, sampler_id);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
 

@@ -17,6 +17,10 @@ private:
     GLint hitbox_min_uniform;
     GLint hitbox_max_uniform;
 
+    GLint bbox_min_uniform;
+    GLint bbox_max_uniform;
+    
+
 public:
     GpuProgramController(GLuint gpu_program_id);
 

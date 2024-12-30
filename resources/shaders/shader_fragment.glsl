@@ -20,7 +20,7 @@
 
 in vec4 position_world;
 in vec4 normal;
-
+in vec4 position_model;
 in vec2 texcoords;
 
 // Matrizes computadas no código C++ e enviadas para a GPU
@@ -110,71 +110,15 @@ void main()
     }
     else if (object_id == FAUSTAO_HAIR)
     {
-        //Kd = vec3(0.08,0.4,0.8);
-        //Ks = vec3(0.8,0.8,0.8);
-        //Ka = vec3(0.04,0.2,0.4);
-        //q = 32.0;
-
-        float minx = bbox_min.x;
-        float maxx = bbox_max.x;
-
-        float miny = bbox_min.y;
-        float maxy = bbox_max.y;
-
-        float minz = bbox_min.z;
-        float maxz = bbox_max.z;
-
-        U = clamp((position_world.x - bbox_min.x) / (bbox_max.x - bbox_min.x), 0.0, 1.0);
-        V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
-
-        Kd = texture(TextureImage1, vec2(U,V)).rgb; 
-        //Kd = texture(TextureImage1, texcoords).rgb;
+        Kd = texture(TextureImage1, texcoords).rgb;
     }
     else if (object_id == FAUSTAO_FACE)
     {
-        //Kd = vec3(0.6, 0.2, 0.6); 
-        //Ks = vec3(0.8, 0.4, 0.8); 
-        //Ka = vec3(0.2, 0.0, 0.2); 
-        //q = 32.0;
-
-        float minx = bbox_min.x;
-        float maxx = bbox_max.x;
-
-        float miny = bbox_min.y;
-        float maxy = bbox_max.y;
-
-        float minz = bbox_min.z;
-        float maxz = bbox_max.z;
-
-        U = clamp((position_world.x - bbox_min.x) / (bbox_max.x - bbox_min.x), 0.0, 1.0);
-        V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
-
-        Kd = texture(TextureImage0, vec2(U,V)).rgb; 
-
-        //Kd = texture(TextureImage1, texcoords).rgb;
+        Kd = texture(TextureImage0, texcoords).rgb;
     }
     else if (object_id == FAUSTAO_CLOTHES)
     {
-        //Kd = vec3(0.8, 0.8, 0.2); 
-        //Ks = vec3(1.0, 1.0, 0.4); 
-        //Ka = vec3(0.2, 0.2, 0.0); 
-        //q = 32.0;
-
-        float minx = bbox_min.x;
-        float maxx = bbox_max.x;
-
-        float miny = bbox_min.y;
-        float maxy = bbox_max.y;
-
-        float minz = bbox_min.z;
-        float maxz = bbox_max.z;
-
-        U = clamp((position_world.x - bbox_min.x) / (bbox_max.x - bbox_min.x), 0.0, 1.0);
-        V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
-        
-        Kd = texture(TextureImage2, vec2(U,V)).rgb; 
-
-        //Kd = texture(TextureImage2, texcoords).rgb;
+        Kd = texture(TextureImage2, texcoords).rgb;
     }
     else // Objeto desconhecido = preto //mudei para a mesma coisa da esfera
     {
@@ -194,7 +138,6 @@ void main()
     // Espectro da luz ambiente
     //vec3 Ia = vec3(0.2,0.2,0.2); // PREENCHA AQUI o espectro da luz ambiente
 
-
     // Termo ambiente
     //vec3 ambient_term = Ka * Ia; // PREENCHA AQUI o termo ambiente
 
@@ -203,6 +146,7 @@ void main()
     
     Ks = vec3(0.8,0.8,0.8);
     q = 32.0;
+
     vec3 lambert_diffuse_term = Kd * (max(0.1, dot(n, l)) + 0.01);
     color.rgb = lambert_diffuse_term;
 
