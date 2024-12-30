@@ -128,6 +128,7 @@ void main()
         V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
 
         Kd = texture(TextureImage1, vec2(U,V)).rgb; 
+        //Kd = texture(TextureImage1, texcoords).rgb;
     }
     else if (object_id == FAUSTAO_FACE)
     {
@@ -149,6 +150,8 @@ void main()
         V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
 
         Kd = texture(TextureImage0, vec2(U,V)).rgb; 
+
+        //Kd = texture(TextureImage1, texcoords).rgb;
     }
     else if (object_id == FAUSTAO_CLOTHES)
     {
@@ -170,6 +173,8 @@ void main()
         V = clamp((position_world.y - bbox_min.y) / (bbox_max.y - bbox_min.y), 0.0, 1.0);
         
         Kd = texture(TextureImage2, vec2(U,V)).rgb; 
+
+        //Kd = texture(TextureImage2, texcoords).rgb;
     }
     else // Objeto desconhecido = preto //mudei para a mesma coisa da esfera
     {
@@ -189,18 +194,17 @@ void main()
     // Espectro da luz ambiente
     //vec3 Ia = vec3(0.2,0.2,0.2); // PREENCHA AQUI o espectro da luz ambiente
 
-    // Termo difuso utilizando a lei dos cossenos de Lambert
-    //vec3 lambert_diffuse_term = Kd * I * max(0, dot(n,l)); // PREENCHA AQUI o termo difuso de Lambert
 
     // Termo ambiente
     //vec3 ambient_term = Ka * Ia; // PREENCHA AQUI o termo ambiente
 
     // Termo especular utilizando o modelo de iluminação de Phong
     //vec3 phong_specular_term  = Ks * I * pow(max(0, dot(r,v)), q); // PREENCH AQUI o termo especular de Phong
-
-    float lambert = max(0, dot(n,l));
     
-    color.rgb = Kd * (lambert + 0.01);
+    Ks = vec3(0.8,0.8,0.8);
+    q = 32.0;
+    vec3 lambert_diffuse_term = Kd * (max(0.1, dot(n, l)) + 0.01);
+    color.rgb = lambert_diffuse_term;
 
     // DEBUG
     //color.rgb = vec3(U, V, 0.0); // Visualize U and V
@@ -208,7 +212,11 @@ void main()
     //color.rgb = vec3((bbox_max.x - bbox_min.x), (bbox_max.y - bbox_min.y), (bbox_max.z - bbox_min.z));
     //color.rgb = texture(TextureImage1, texcoords).rgb;
     //float checker = mod(floor(U * 10.0) + floor(V * 10.0), 2.0);
-    //color.rgb = vec3(checker);
+    //if (checker < 1.0) {
+    //    color.rgb = vec3(0.0, 0.0, 0.0); // Black
+    //} else {
+    //    color.rgb = vec3(1.0, 0.0, 0.0); // Red
+    //}
 
 
 
