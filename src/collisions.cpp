@@ -9,7 +9,7 @@ glm::vec4 vec3ToVec4(const glm::vec3& v, float w = 0.0f) {
 
 bool Collisions::AABBsTest(const glm::vec3& min1, const glm::vec3& max1, const glm::vec3& min2, const glm::vec3& max2){
     
-  std::cout<<"testando colisao entre os pontos: "<<min1.x<<" "<<min1.y<<" "<<min1.z<<" e "<<max1.x<<" "<<max1.y<<" "<<max1.z<<std::endl;
+  //std::cout<<"testando colisao entre os pontos: "<<min1.x<<" "<<min1.y<<" "<<min1.z<<" e "<<max1.x<<" "<<max1.y<<" "<<max1.z<<std::endl;
 
   glm::vec3 temp1=min1;
   glm::vec3 temp2=max1;
@@ -53,15 +53,15 @@ bool Collisions::OBBsTest(
     const glm::vec3& center1, const glm::vec3& halfSize1, const glm::vec3 axis1[3],
     const glm::vec3& center2, const glm::vec3& halfSize2, const glm::vec3 axis2[3]
 ) {
-    std::cout<<"testando colisoes entre OBBs"<<std::endl;
-    std::cout<<"center1: "<<center1.x<<" "<<center1.y<<" "<<center1.z<<std::endl;
-    std::cout<<"center2: "<<center2.x<<" "<<center2.y<<" "<<center2.z<<std::endl;
-    std::cout<<"halfSize1: "<<halfSize1.x<<" "<<halfSize1.y<<" "<<halfSize1.z<<std::endl;
-    std::cout<<"halfSize2: "<<halfSize2.x<<" "<<halfSize2.y<<" "<<halfSize2.z<<std::endl;
-    for(int i=0;i<3;i++){
-      std::cout<<"axis1: "<<axis1[i].x<<" "<<axis1[i].y<<" "<<axis1[i].z<<std::endl;
-      std::cout<<"axis2: "<<axis2[i].x<<" "<<axis2[i].y<<" "<<axis2[i].z<<std::endl;
-    }
+    // std::cout<<"testando colisoes entre OBBs"<<std::endl;
+    // std::cout<<"center1: "<<center1.x<<" "<<center1.y<<" "<<center1.z<<std::endl;
+    // std::cout<<"center2: "<<center2.x<<" "<<center2.y<<" "<<center2.z<<std::endl;
+    // std::cout<<"halfSize1: "<<halfSize1.x<<" "<<halfSize1.y<<" "<<halfSize1.z<<std::endl;
+    // std::cout<<"halfSize2: "<<halfSize2.x<<" "<<halfSize2.y<<" "<<halfSize2.z<<std::endl;
+    // for(int i=0;i<3;i++){
+    //   std::cout<<"axis1: "<<axis1[i].x<<" "<<axis1[i].y<<" "<<axis1[i].z<<std::endl;
+    //   std::cout<<"axis2: "<<axis2[i].x<<" "<<axis2[i].y<<" "<<axis2[i].z<<std::endl;
+    // }
     glm::vec3 relativePos = center2 - center1;
 
     if (GetSeparatingPlane(relativePos, axis1[0], halfSize1, axis1, halfSize2, axis2) ||

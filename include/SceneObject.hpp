@@ -21,8 +21,9 @@ private:
   /*void calculateHitbox();*/
   glm::vec3 object_color=glm::vec3(0.5f,0.5f,0.5f);
   Hitbox* hitbox=nullptr;
-  /*glm::vec3 hitboxMin;*/
-  /*glm::vec3 hitboxMax;*/
+  
+  glm::vec3 hitboxMin;
+  glm::vec3 hitboxMax;
 
 
 public:

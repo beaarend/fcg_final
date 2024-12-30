@@ -68,18 +68,20 @@ void AxisAlignedBoundingBox::calculateHitbox(tinyobj::attrib_t& attrib){
 
 void AxisAlignedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
   
-    std::cout<<"vertices antes de atualizar normal"<<std::endl;
-    for(int i=0;i<8;i++){
-      std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
-    }
+    // std::cout<<"vertices antes de atualizar normal"<<std::endl;
+    // for(int i=0;i<8;i++){
+    //   std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
+    // }
+
     resetVertices();
-    std::cout<<"vertices depois de atualizar normal"<<std::endl;
+
+    // std::cout<<"vertices depois de atualizar normal"<<std::endl;
     for(int i=0; i<8; i++){
         vertices[i] = model_matrix * glm::vec4(vertices[i], 1.0f);
     }
-    for(int i=0;i<8;i++){
-      std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
-    }
+    // for(int i=0;i<8;i++){
+    //   std::cout<<vertices[i].x<<" "<<vertices[i].y<<" "<<vertices[i].z<<std::endl;
+    // }
 }
 
 void AxisAlignedBoundingBox::resetVertices(){
@@ -150,7 +152,7 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
 
 bool AxisAlignedBoundingBox::checkCollision(Hitbox* hitbox){
   hitboxType = hitbox->getHitboxType();
-  std::cout<<"testando colisoes"<<std::endl;
+  //std::cout<<"testando colisoes"<<std::endl;
   //dependendo do tipo de hitbox, a colisao sera feita de uma forma
   if(hitboxType == HitboxType::AABB){
     return Collisions::AABBsTest(this->getHitboxMin(), this->getHitboxMax(), hitbox->getHitboxMin(), hitbox->getHitboxMax());
@@ -306,10 +308,10 @@ glm::vec3* OrientedBoundingBox::getAxis(){
 bool OrientedBoundingBox::checkCollision(Hitbox* hitbox){
   HitboxType hitboxType = hitbox->getHitboxType();
   if(hitboxType == HitboxType::OBB){
-    std::cout<<"testando colisao entre OBBs"<<std::endl;
-    this->printVertices();
-    std::cout<<"-------------------"<<std::endl;  
-    hitbox->printVertices();
+    // std::cout<<"testando colisao entre OBBs"<<std::endl;
+    // this->printVertices();
+    // std::cout<<"-------------------"<<std::endl;  
+    // hitbox->printVertices();
     /*return Collisions::OBBsTest(center, halfSize, axis, ((OrientedBoundingBox*)hitbox)->getCenter(), ((OrientedBoundingBox*)hitbox)->getHalfSize(), ((OrientedBoundingBox*)hitbox)->getAxis());*/
     return Collisions::TestOBBCollisionVertices(this->getVertices(), hitbox->getVertices());
   }

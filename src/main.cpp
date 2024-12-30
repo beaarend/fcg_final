@@ -454,8 +454,9 @@ int main(int argc, char* argv[])
             object.translate(playerPosition.x, playerPosition.y, playerPosition.z);
             object.translate(1.0f, 2.3f, 0.0f);
             bool coll=object.checkCollision(rampObject);
-            if(coll)
-              std::cout<<"colidiu"<<std::endl;
+
+            // if(coll)
+            //   std::cout<<"colidiu"<<std::endl;
 
             object.render(gpu_controller);
         }
@@ -588,6 +589,12 @@ void LoadShadersFromFiles()
     g_bbox_max_uniform   = glGetUniformLocation(g_GpuProgramID, "bbox_max");
 
     glUseProgram(g_GpuProgramID);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES

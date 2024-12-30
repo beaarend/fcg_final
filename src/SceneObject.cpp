@@ -233,12 +233,28 @@ SceneObject::SceneObject(const char *filename, const char *flag)
     }
 }
 
+
+glm::vec3 SceneObject::getHitboxMax() {
+    return this->hitbox->getHitboxMax();
+}
+
+glm::vec3 SceneObject::getHitboxMin() {
+    return this->hitbox->getHitboxMin();
+}
+
+
 void SceneObject::render(GpuProgramController& gpuProgramController)
 {
     glBindVertexArray(vertex_array_object_id);
+
+    this->hitboxMax = this->hitbox->getHitboxMax();
+    this->hitboxMin = this->hitbox->getHitboxMin();
+
     for (const auto &shape : shape_render_data)
     {
-        gpuProgramController.DrawObject(vertex_array_object_id, model_matrix, object_id, object_color);
+        //gpuProgramController.DrawObject(vertex_array_object_id, model_matrix, object_id, object_color);
+        gpuProgramController.DrawObjectHitbox(vertex_array_object_id, model_matrix, object_id, object_color, hitboxMin, hitboxMax);
+
         glDrawElements(GL_TRIANGLES, shape.num_indices, GL_UNSIGNED_INT, (void *)(shape.first_index * sizeof(GLuint)));
     }
     glBindVertexArray(0);
