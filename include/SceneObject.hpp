@@ -25,6 +25,10 @@ private:
   glm::vec3 hitboxMin;
   glm::vec3 hitboxMax;
 
+  glm::vec3 bbox_min;
+  glm::vec3 bbox_max;
+
+
 
 public:
     SceneObject(const char* filename, const char *flag);
