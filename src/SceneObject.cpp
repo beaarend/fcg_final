@@ -5,6 +5,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <matrices.h>
+#include <Hitbox.hpp>
 
 struct ShapeRenderData {
     size_t first_index;
@@ -113,6 +114,8 @@ void SceneObject::initBuffers()
                 bbox_max.x = std::max(bbox_max.x, vx);
                 bbox_max.y = std::max(bbox_max.y, vy);
                 bbox_max.z = std::max(bbox_max.z, vz);
+                
+            
 
                 if (idx.normal_index != -1)
                 {
@@ -134,6 +137,9 @@ void SceneObject::initBuffers()
                 }
             }
         }
+
+        this->center = (bbox_min + bbox_max) / 2.0f;
+        this->curr_center = this->center;
 
         size_t last_index = indices.size() - 1;
         shape_render_data.push_back({first_index, last_index - first_index + 1});
@@ -190,7 +196,7 @@ void SceneObject::initBuffers()
 
 SceneObject::SceneObject(const tinyobj::attrib_t &attrib, 
                          const tinyobj::shape_t &shape, 
-                         const std::vector<tinyobj::material_t> &materials)
+                         const std::vector<tinyobj::material_t> &materials,HitboxType hitboxType=HitboxType::AABB)
 {
     this->attrib = attrib;
     this->shapes.push_back(shape); // Only include this shape
@@ -198,10 +204,18 @@ SceneObject::SceneObject(const tinyobj::attrib_t &attrib,
 
     ComputeNormals();
     initBuffers();
-    this->hitbox = new AxisAlignedBoundingBox(this->attrib);
+    if(hitboxType == HitboxType::AABB){
+      this->hitbox = new AxisAlignedBoundingBox((tinyobj::attrib_t&)attrib);
+    }
+    else if(hitboxType == HitboxType::OBB){
+      this->hitbox = new OrientedBoundingBox((tinyobj::attrib_t&)attrib);
+    }
+    else if(hitboxType == HitboxType::SPHERE){
+      this->hitbox = new SphereHitbox((tinyobj::attrib_t&)attrib);
+    }
 }
 
-SceneObject::SceneObject(const char *filename, const char *flag)
+SceneObject::SceneObject(const char *filename, const char *flag, HitboxType hitboxType=HitboxType::AABB)
 {
     std::cout<<"carregando objeto: "<<filename<<std::endl;
     std::string fullpath(filename);
@@ -242,7 +256,19 @@ SceneObject::SceneObject(const char *filename, const char *flag)
     {
         ComputeNormals();
         initBuffers();
-        this->hitbox = new AxisAlignedBoundingBox(attrib);
+        if(hitboxType == HitboxType::AABB){
+          this->hitbox = new AxisAlignedBoundingBox(attrib);
+        std::cout<<"Hitbox carregada com sucesso: AAB\n";
+        }
+        else if(hitboxType == HitboxType::OBB){
+          this->hitbox = new OrientedBoundingBox(attrib);
+        std::cout<<"Hitbox carregada com sucesso: OBB\n";
+        }
+        else if(hitboxType == HitboxType::SPHERE){
+          this->hitbox = new SphereHitbox(attrib);
+        std::cout<<"Hitbox carregada com sucesso: SPHERE\n";
+        }
+
     }
 }
 
@@ -260,8 +286,6 @@ void SceneObject::render(GpuProgramController& gpuProgramController)
 {
     glBindVertexArray(vertex_array_object_id);
 
-    this->hitboxMax = this->hitbox->getHitboxMax();
-    this->hitboxMin = this->hitbox->getHitboxMin();
 
     for (const auto &shape : shape_render_data)
     {
@@ -306,28 +330,43 @@ Hitbox* SceneObject::getHitbox(){
 }
 
 void SceneObject::scale(const glm::vec3& scale) {
-    model_matrix = Matrices::Scale(scale.x, scale.y, scale.z) * model_matrix;
-    this->hitbox->UpdateHitbox(model_matrix);
+
+    //move o objeto para o center
+    /*glm::vec3 translation = this->center -this->curr_center;*/
+    /*model_matrix = Matrices::Translate(translation.x, translation.y, translation.z) * model_matrix;*/
+    model_matrix =  Matrices::Scale(scale.x,scale.y,scale.z) * model_matrix;
+    /*model_matrix = Matrices::Translate(-translation.x, -translation.y, -translation.z) * model_matrix;*/
+    this->hitbox->scale(scale);
+    /*this->hitbox->UpdateHitbox(model_matrix);*/
 }
+
 
 void SceneObject::translate(float x, float y, float z) {
     model_matrix = Matrices::Translate(x, y, z) * model_matrix;
-    this->hitbox->UpdateHitbox(model_matrix);
+    this->curr_center = Matrices::Translate(x, y, z) * glm::vec4(this->curr_center, 1.0f);
+    this->hitbox->translate(x, y, z);
+    /*this->hitbox->UpdateHitbox(model_matrix);*/
 }
 
 void SceneObject::rotateX(float angle) {
+    /*glm::vec3 translation =-this->curr_center;*/
+    /*model_matrix = Matrices::Translate(translation.x, translation.y, translation.z) * model_matrix;*/
     model_matrix = Matrices::RotateX(angle) * model_matrix; 
-    this->hitbox->UpdateHitbox(model_matrix);
+    /*model_matrix = Matrices::Translate(-translation.x, -translation.y, -translation.z) * model_matrix;*/
+    this->hitbox->rotateX(angle);
+    /*this->hitbox->UpdateHitbox(model_matrix);*/
 }
 
 void SceneObject::rotateY(float angle) {
     model_matrix = Matrices::RotateY(angle) * model_matrix;
-    this->hitbox->UpdateHitbox(model_matrix);
+    this->hitbox->rotateY(angle);
+    /*this->hitbox->UpdateHitbox(model_matrix);*/
 }
 
 void SceneObject::rotateZ(float angle) {
   model_matrix = Matrices::RotateZ(angle) * model_matrix;
-  this->hitbox->UpdateHitbox(model_matrix);
+  this->hitbox->rotateZ(angle);
+  /*this->hitbox->UpdateHitbox(model_matrix);*/
 }
 
 void SceneObject::setObjectID(int object_id){
@@ -342,6 +381,7 @@ void SceneObject::setObjectColor(glm::vec3 object_color){
 
 void SceneObject::resetModelMatrix(){
   model_matrix = Matrices::Identity();
+  this->curr_center = this->center;
   HitboxType hitboxType = this->hitbox->getHitboxType();
   delete this->hitbox;
   if(hitboxType == HitboxType::AABB){
@@ -350,4 +390,14 @@ void SceneObject::resetModelMatrix(){
   else if(hitboxType == HitboxType::OBB){
     this->hitbox = new OrientedBoundingBox(attrib);
   }
+  else if(hitboxType == HitboxType::SPHERE){
+    this->hitbox = new SphereHitbox(attrib);
+  }
+}
+
+glm::vec3 SceneObject::getBboxMin(){
+  return this->bbox_min;
+}
+glm::vec3 SceneObject::getBboxMax(){
+  return this->bbox_max;
 }

@@ -7,8 +7,9 @@ GpuProgramController::GpuProgramController(GLuint gpu_program_id)
     this->model_uniform = glGetUniformLocation(gpu_program_id, "model");
     this->object_id_uniform  = glGetUniformLocation(gpu_program_id, "object_id"); // Variável "object_id" em shader_fragment.glsl
     this->object_color_uniform = glGetUniformLocation(gpu_program_id, "objectColor");
-    this->hitbox_min_uniform   = glGetUniformLocation(gpu_program_id, "bbox_min");
-    this->hitbox_max_uniform   = glGetUniformLocation(gpu_program_id, "bbox_max");
+
+    /*this->hitbox_min_uniform   = glGetUniformLocation(gpu_program_id, "bbox_min");*/
+    /*this->hitbox_max_uniform   = glGetUniformLocation(gpu_program_id, "bbox_max");*/
 
     this->bbox_min_uniform   = glGetUniformLocation(gpu_program_id,  "bbox_min");
     this->bbox_max_uniform   = glGetUniformLocation(gpu_program_id,  "bbox_max");
@@ -41,11 +42,11 @@ void GpuProgramController::DrawObjectHitbox(GLuint vertex_array_object_id ,glm::
     glUniform1i(object_id_uniform, objectID);
     glUniform3f(object_color_uniform, objectColor.x, objectColor.y, objectColor.z); // Red color
 
-    // std::cout << "hitboxMin: " << hitboxMin.x << " " << hitboxMin.y << " " << hitboxMin.z << std::endl;
-    // std::cout << "hitboxMax: " << hitboxMax.x << " " << hitboxMax.y << " " << hitboxMax.z << std::endl;
+     /*std::cout << "hitboxMin: " << hitboxMin.x << " " << hitboxMin.y << " " << hitboxMin.z << std::endl;*/
+     /*std::cout << "hitboxMax: " << hitboxMax.x << " " << hitboxMax.y << " " << hitboxMax.z << std::endl;*/
 
-    glUniform4f(hitbox_min_uniform, hitboxMin.x, hitboxMin.y, hitboxMin.z, 1.0f);
-    glUniform4f(hitbox_max_uniform, hitboxMax.x, hitboxMax.y, hitboxMax.z, 1.0f);
+    /*glUniform4f(hitbox_min_uniform, hitboxMin.x, hitboxMin.y, hitboxMin.z, 1.0f);*/
+    /*glUniform4f(hitbox_max_uniform, hitboxMax.x, hitboxMax.y, hitboxMax.z, 1.0f);*/
 }
 
 
