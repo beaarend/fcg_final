@@ -325,6 +325,10 @@ int main(int argc, char* argv[])
     #define FAUSTAO_HAIR 4
     #define FAUSTAO_FACE 5
     #define FAUSTAO_CLOTHES 6
+
+    #define SPHERE 0
+    #define BUNNY  1
+    #define PLANE  2
     
     // Iterate over shapes in the loaded object
     for (const auto &shape : faustaoObject.shapes)
@@ -354,10 +358,10 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
     LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
     LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
-    //LoadTextureImage("../../resources/objects/ObsidianCube.png"); // texture03
+    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture03
 
     SceneObject rampObject("../../resources/objects/plane.obj", "unique", HitboxType::OBB);
-    rampObject.setObjectID(2);
+    rampObject.setObjectID(PLANE);
     sceneObjects.push_back(&rampObject);
     rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
     rampObject.translate(0.0f, -0.90f, -2.5f);
@@ -457,7 +461,7 @@ int main(int argc, char* argv[])
             /*object->translate(0.0f, -34.8f, 0.0f);*/
             /*object->rotateX(-1.57f);*/
             /*object->rotateY(-3.14f);*/
-            /*object->translate(playerPosition.x, playerPosition.y, playerPosition.z);*/
+            object->translate(playerPosition.x, playerPosition.y, playerPosition.z);
             bool coll=object->checkCollision(rampObject);
              if(coll)
                std::cout<<"colidiu"<<std::endl;
@@ -614,6 +618,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 3); // OBSIDIAN
     glUseProgram(0);
 }
 

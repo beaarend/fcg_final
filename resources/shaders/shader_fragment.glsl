@@ -36,6 +36,7 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
+uniform sampler2D TextureImage3;
 
 uniform int object_id;
 uniform vec3 objectColor;
@@ -88,6 +89,7 @@ void main()
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.4,0.2,0.04);
         q = 1.0;
+        //Kd = texture(TextureImage3, texcoords).rgb;
     }
     else if ( object_id == BUNNY )
     {
@@ -97,94 +99,81 @@ void main()
         Ks = vec3(0.8,0.8,0.8);
         Ka = vec3(0.04,0.2,0.4);
         q = 32.0;
+        //Kd = texture(TextureImage3, texcoords).rgb;
     }
     else if ( object_id == PLANE )
     {
         // PREENCHA AQUI
         // Propriedades espectrais do plano
-        // Kd = vec3(0.2,0.2,0.2);
         Kd = objectColor;
-        Ks = vec3(0.3,0.3,0.3);
+        //Kd = texture(TextureImage3, texcoords).rgb;
+        Ks = vec3(0.8,0.8,0.8);
         Ka = vec3(0.0,0.0,0.0);
-        q = 20.0;
+        q = 32.0;
     }
     else if (object_id == FAUSTAO_HAIR)
     {
         Kd = texture(TextureImage1, texcoords).rgb;
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 32.0;
     }
     else if (object_id == FAUSTAO_FACE)
     {
         Kd = texture(TextureImage0, texcoords).rgb;
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 32.0;
     }
     else if (object_id == FAUSTAO_CLOTHES)
     {
         Kd = texture(TextureImage2, texcoords).rgb;
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 32.0;
     }
-    else // Objeto desconhecido = preto //mudei para a mesma coisa da esfera
+    else // Objeto desconhecido = preto 
     {
         Kd = objectColor;
         Ks = vec3(0.0,0.0,0.0);
         Ka = vec3(0.4,0.2,0.04);
         q = 1.0;
-        // Kd = vec3(0.0,0.0,0.0);
-        // Ks = vec3(0.0,0.0,0.0);
-        // Ka = vec3(0.0,0.0,0.0);
-        // q = 1.0;
     }
 
     // Espectro da fonte de iluminação
-    //vec3 I = vec3(1.0,1.0,1.0); // PREENCH AQUI o espectro da fonte de luz
+    vec3 I = vec3(1.0,1.0,1.0); 
 
     // Espectro da luz ambiente
-    //vec3 Ia = vec3(0.2,0.2,0.2); // PREENCHA AQUI o espectro da luz ambiente
+    vec3 Ia = vec3(0.2,0.2,0.2); 
 
     // Termo ambiente
-    //vec3 ambient_term = Ka * Ia; // PREENCHA AQUI o termo ambiente
+    vec3 ambient_term = Ka * Ia; 
 
-    // Termo especular utilizando o modelo de iluminação de Phong
-    //vec3 phong_specular_term  = Ks * I * pow(max(0, dot(r,v)), q); // PREENCH AQUI o termo especular de Phong
-    
-    Ks = vec3(0.8,0.8,0.8);
-    q = 32.0;
-
+    // Termo difuso utilizando Lambert
     vec3 lambert_diffuse_term = Kd * (max(0.1, dot(n, l)) + 0.01);
-    color.rgb = lambert_diffuse_term;
-
-    // DEBUG
-    //color.rgb = vec3(U, V, 0.0); // Visualize U and V
-    //color.rgb = texture(TextureImage2, vec2(U, V)).rgb;
-    //color.rgb = vec3((bbox_max.x - bbox_min.x), (bbox_max.y - bbox_min.y), (bbox_max.z - bbox_min.z));
-    //color.rgb = texture(TextureImage1, texcoords).rgb;
-    //float checker = mod(floor(U * 10.0) + floor(V * 10.0), 2.0);
-    //if (checker < 1.0) {
-    //    color.rgb = vec3(0.0, 0.0, 0.0); // Black
-    //} else {
-    //    color.rgb = vec3(1.0, 0.0, 0.0); // Red
-    //}
-
-
-
-    // NOTE: Se você quiser fazer o rendering de objetos transparentes, é
-    // necessário:
-    // 1) Habilitar a operação de "blending" de OpenGL logo antes de realizar o
-    //    desenho dos objetos transparentes, com os comandos abaixo no código C++:
-    //      glEnable(GL_BLEND);
-    //      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // 2) Realizar o desenho de todos objetos transparentes *após* ter desenhado
-    //    todos os objetos opacos; e
-    // 3) Realizar o desenho de objetos transparentes ordenados de acordo com
-    //    suas distâncias para a câmera (desenhando primeiro objetos
-    //    transparentes que estão mais longe da câmera).
-    // Alpha default = 1 = 100% opaco = 0% transparente
-    color.a = 1;
-
-    // Cor final do fragmento calculada com uma combinação dos termos difuso,
-    // especular, e ambiente. Veja slide 129 do documento Aula_17_e_18_Modelos_de_Iluminacao.pdf.
     
-    //color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
+    // Termo especular utilizando o modelo de iluminação de Phong
+    vec3 phong_specular_term  = Ks * I * pow(max(0, dot(r,v)), q); 
 
-    // Cor final com correção gamma, considerando monitor sRGB.
-    // Veja https://en.wikipedia.org/w/index.php?title=Gamma_correction&oldid=751281772#Windows.2C_Mac.2C_sRGB_and_TV.2Fvideo_standard_gammas
+    // REQUISITO: Iluminação difusa (Lambert) e Blinn-Phong
+    if (object_id == FAUSTAO_HAIR || object_id == FAUSTAO_CLOTHES || object_id == FAUSTAO_FACE)
+    {
+        color.rgb = lambert_diffuse_term + ambient_term;
+    }
+
+    // REQUISITO: Modelo de Gouraud -> calcular no shader_vertex POR ENQUANTO NORMAL
+    else if (object_id == PLANE)
+    {
+        color.rgb = lambert_diffuse_term + ambient_term;
+    }
+
+    // REQUISITO: Modelo de Phong
+    else if (object_id == SPHERE)
+    {
+        color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
+    }
+
+    color.a = 1;
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
 } 
 
