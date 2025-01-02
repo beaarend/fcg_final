@@ -322,6 +322,10 @@ int main(int argc, char* argv[])
     #define FAUSTAO_HAIR 4
     #define FAUSTAO_FACE 5
     #define FAUSTAO_CLOTHES 6
+
+    #define SPHERE 0
+    #define BUNNY  1
+    #define PLANE  2
     
     // Iterate over shapes in the loaded object
     for (const auto &shape : faustaoObject.shapes)
@@ -350,10 +354,10 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
     LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
     LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
-    //LoadTextureImage("../../resources/objects/ObsidianCube.png"); // texture03
+    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture03
 
     SceneObject rampObject("../../resources/objects/plane.obj", "unique");
-    rampObject.setObjectID(2);
+    rampObject.setObjectID(PLANE);
     rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
     rampObject.translate(0.0f, -0.90f, -2.5f);
     rampObject.rotateX(ramp_angle_x);
@@ -368,7 +372,7 @@ int main(int argc, char* argv[])
 
 
     SceneObject floorObject("../../resources/objects/plane.obj", "unique");
-    floorObject.setObjectID(3);
+    floorObject.setObjectID(PLANE);
     floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));
     floorObject.translate(0.0f, -2.0f, 0.4f);
     floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
@@ -605,6 +609,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 3); // OBSIDIAN
     glUseProgram(0);
 }
 
