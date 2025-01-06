@@ -70,4 +70,5 @@ public:
     glm::vec3 getBboxMin(); 
     glm::vec3 getBboxMax();
     bool getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal);
+    int getID();
 };

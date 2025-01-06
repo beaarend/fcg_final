@@ -14,9 +14,6 @@ enum class HitboxType{
 class Hitbox{
 protected:
   //servem para desenhar a hitbox
-  glm::vec3 hitboxMin;
-  glm::vec3 hitboxMax;
-  /*glm::vec3 vertices[8];*/
   HitboxType hitboxType;
   std::vector<glm::vec3> vertices;
 
@@ -25,9 +22,6 @@ public:
   virtual void calculateHitbox(tinyobj::attrib_t& attrib) = 0;
   virtual void UpdateHitbox(glm::mat4 model_matrix) = 0;
   virtual void draw(GpuProgramController& gpuProgramController) = 0;
-  virtual void resetVertices()=0;
-  glm::vec3 getHitboxMin();
-  glm::vec3 getHitboxMax();
   glm::vec3* getVertices();
   HitboxType getHitboxType(); 
   virtual bool checkCollision(Hitbox* hitbox) = 0;
@@ -40,6 +34,9 @@ public:
 };
 
 class AxisAlignedBoundingBox: public Hitbox{
+private:
+  glm::vec3 min;
+  glm::vec3 max;
 public:
   AxisAlignedBoundingBox(tinyobj::attrib_t& attrib);
   void calculateHitbox(tinyobj::attrib_t& attrib) override;
@@ -49,9 +46,11 @@ public:
   void rotateX(float angle) override;
   void rotateY(float angle) override;
   void rotateZ(float angle) override;
-  void resetVertices() override;
+  void resetVertices() ;
   void draw(GpuProgramController& gpuProgramController) override;
   bool checkCollision(Hitbox* hitbox) override;
+  glm::vec3 getMin();
+  glm::vec3 getMax();
 };
 
 class OrientedBoundingBox: public Hitbox{
@@ -59,12 +58,14 @@ private:
   glm::vec3 center;//ponto central do OOBB
   glm::vec3 halfSize;//metade do tamanho do OOBB
   glm::vec3 axis[3];//eixos do OOBB
+  glm::vec3 min;
+  glm::vec3 max;
 public:
   OrientedBoundingBox(tinyobj::attrib_t& attrib);
   void calculateHitbox(tinyobj::attrib_t& attrib) override;
   void UpdateHitbox(glm::mat4 model_matrix) override;
   void draw(GpuProgramController& gpuProgramController) override;
-  void resetVertices() override;
+  void resetVertices() ;
   void translate(float x, float y, float z) override;
   void scale(const glm::vec3& scale) override;
   void rotateX(float angle) override;
@@ -74,6 +75,8 @@ public:
   glm::vec3 getCenter();
   glm::vec3 getHalfSize();
   glm::vec3* getAxis();
+  glm::vec3 getMin();
+  glm::vec3 getMax();
 
 };
 
@@ -88,7 +91,6 @@ public:
   void calculateVertices();
   void UpdateHitbox(glm::mat4 model_matrix) override;
   void draw(GpuProgramController& gpuProgramController) override;
-  void resetVertices() override;
   bool checkCollision(Hitbox* hitbox) override;
   void translate(float x, float y, float z) override;
   void scale(const glm::vec3& scale) override;

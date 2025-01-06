@@ -27,6 +27,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <Animation.hpp>
 #include <algorithm>
 
 // Headers das bibliotecas OpenGL
@@ -308,16 +309,27 @@ int main(int argc, char* argv[])
     GpuProgramController gpu_controller(g_GpuProgramID);
 
     std::vector<SceneObject*> sceneObjects;
+    std::vector<SceneObject*> spheres(3);
+    std::vector<Animation*> animations;
     
-    SceneObject sphereObject("../../resources/objects/sphere.obj", "unique", HitboxType::SPHERE);
-    sphereObject.setObjectID(0);
-    sphereObject.translate(0.0f, -1.2f, 0.0f);
-    sceneObjects.push_back(&sphereObject);
-    SceneObject bunnyObject("../../resources/objects/bunny.obj", "unique", HitboxType::AABB);
-    bunnyObject.setObjectID(1);
+    /*SceneObject sphereObject("../../resources/objects/sphere.obj", "unique", HitboxType::SPHERE);*/
+    /*sphereObject.setObjectID(0);*/
+    /*sphereObject.translate(0.0f, 1.8f, 0.0f);*/
+    /*sceneObjects.push_back(&sphereObject);*/
 
-    // SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj");
-    // faustaoObject.setObjectID(6);
+    for (int i = 0; i < spheres.size(); i++)
+    {
+        std::cout<<"Creating sphere "<<i<<std::endl;
+        SceneObject* sphereObject = new SceneObject("../../resources/objects/sphere.obj", "unique", HitboxType::SPHERE);
+        sphereObject->setObjectID(10+i);
+        sphereObject->setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
+        sceneObjects.push_back(sphereObject);
+        spheres[i] = sphereObject;
+        //numero aleatorio entre 0 e 8
+        float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.0f));
+        Animation* animation = new Animation(sphereObject, glm::vec3(2.0f*i, 0.0f, -15.0f), glm::vec3(2.0f*i, 0.0f, 10.0f), 5.0f,x);
+        animations.push_back(animation);
+    }
 
     std::vector<SceneObject*> faustaoParts;
     SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple", HitboxType::AABB);
@@ -333,7 +345,7 @@ int main(int argc, char* argv[])
     // Iterate over shapes in the loaded object
     for (const auto &shape : faustaoObject.shapes)
     {
-        SceneObject* individualObject= new SceneObject(faustaoObject.attrib, shape, faustaoObject.materials, HitboxType::OBB);
+        SceneObject* individualObject= new SceneObject(faustaoObject.attrib, shape, faustaoObject.materials, HitboxType::AABB);
 
         if (shape.name == "Object.1")
         {
@@ -360,22 +372,12 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
     LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture03
 
-    SceneObject rampObject("../../resources/objects/plane.obj", "unique", HitboxType::OBB);
+    SceneObject rampObject("../../resources/objects/plane.obj", "unique", HitboxType::AABB);
     rampObject.setObjectID(PLANE);
     sceneObjects.push_back(&rampObject);
-    rampObject.scale(glm::vec3(5.0f, 0.5f, 5.0f));
-    rampObject.translate(0.0f, -0.90f, -2.5f);
-    /*rampObject.rotateX(ramp_angle_x);*/
-    /*rampObject.rotateY(ramp_angle_y);*/
-    /*rampObject.rotateZ(ramp_angle_z);*/
-    /*rampObject.setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));*/
+    rampObject.scale(glm::vec3(20.0f, 0.5f, 45.0f));
+    rampObject.translate(0.0f, -1.90f, -2.5f);
     
-    /*glm::vec3 rampPoint, rampNormal;*/
-    /*if (!rampObject.getPlaneInfo(rampPoint, rampNormal)) {*/
-    /*    std::cerr << "Failed to get plane info" << std::endl;*/
-    /*}*/
-
-
     /*SceneObject floorObject("../../resources/objects/plane.obj", "unique", HitboxType::AABB);*/
     /*floorObject.setObjectID(3);*/
     /*floorObject.scale(glm::vec3(5.0f, 0.5f, 2.0f));*/
@@ -444,7 +446,7 @@ int main(int argc, char* argv[])
         }
         else if (gameState == GAMEPLAY)
         {
-            player.Update(delta_time);
+            player.Update(delta_time, faustaoParts, &rampObject);
 
         }
         #define SPHERE 0
@@ -458,16 +460,23 @@ int main(int argc, char* argv[])
             object->resetModelMatrix();
             /*object->rotateX(-2.35f);*/
             object->scale(glm::vec3(0.05f, 0.05f, 0.05f));
-            /*object->translate(0.0f, -34.8f, 0.0f);*/
-            /*object->rotateX(-1.57f);*/
+            /*object->translate(0.0f, -3.8f, -2.0f);*/
+            object->rotateX(-1.57f);
+           object->rotateY(3.14f); 
             /*object->rotateY(-3.14f);*/
             object->translate(playerPosition.x, playerPosition.y, playerPosition.z);
-            bool coll=object->checkCollision(rampObject);
-             if(coll)
-               std::cout<<"colidiu"<<std::endl;
-            /*object->render(gpu_controller);*/
-            /*std::cout<<"bbox_min: "<<object.getBboxMin().x<<" "<<object.getBboxMin().y<<" "<<object.getBboxMin().z<<std::endl;*/
-            /*std::cout<<"bbox_max: "<<object.getBboxMax().x<<" "<<object.getBboxMax().y<<" "<<object.getBboxMax().z<<std::endl;*/
+            for(auto sphere: spheres)
+            {
+                if(object->checkCollision(*sphere))
+                {
+                    std::cout<<"COLIDIU"<<std::endl;
+                }
+            }
+        }
+        
+        for(auto &animation : animations)
+        {
+            animation->Update(delta_time);
         }
 
 
@@ -476,13 +485,6 @@ int main(int argc, char* argv[])
             sceneobject->render(gpu_controller);
         }
         
-        // Imprimimos na tela os ângulos de Euler que controlam a rotação do
-        // terceiro cubo.
-        TextRendering_ShowEulerAngles(window);
-
-        // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
-        TextRendering_ShowProjection(window);
-
         // Imprimimos na tela informação sobre o número de quadros renderizados
         // por segundo (frames per second).
         TextRendering_ShowFramesPerSecond(window);

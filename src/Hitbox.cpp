@@ -8,14 +8,6 @@
 #include <collisions.hpp>
 
 
-glm::vec3 Hitbox::getHitboxMin(){
-  return vertices[0];
-}
-
-glm::vec3 Hitbox::getHitboxMax(){
-  return vertices[6];
-}
-
 glm::vec3* Hitbox::getVertices(){
     int size = vertices.size();
     glm::vec3* vertices = new glm::vec3[size];
@@ -26,6 +18,18 @@ glm::vec3* Hitbox::getVertices(){
 }
 
 HitboxType Hitbox::getHitboxType(){
+  if(hitboxType == HitboxType::AABB){
+    /*std::cout<<"AABB\n";*/
+    return HitboxType::AABB;
+  }
+  else if(hitboxType == HitboxType::OBB){
+    /*std::cout<<"OBB\n";*/
+    return HitboxType::OBB;
+  }
+  else if(hitboxType == HitboxType::SPHERE){
+    /*std::cout<<"SPHERE\n";*/
+    return HitboxType::SPHERE;
+  }
   return hitboxType;
 }
 
@@ -39,14 +43,14 @@ AxisAlignedBoundingBox::AxisAlignedBoundingBox(tinyobj::attrib_t& attrib){
   calculateHitbox(attrib);
   this->hitboxType = HitboxType::AABB;
   glm::vec3 vertices[8] = {
-      hitboxMin,
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-      glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-      hitboxMax,
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
+      this->min,
+      glm::vec3(this->max.x, this->min.y, this->min.z),
+      glm::vec3(this->max.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->min.y, this->max.z),
+      glm::vec3(this->max.x, this->min.y, this->max.z),
+      this->max,
+      glm::vec3(this->min.x, this->max.y, this->max.z)
   };
   for(int i=0;i<8;i++){
     this->vertices.push_back(vertices[i]);
@@ -57,54 +61,54 @@ void AxisAlignedBoundingBox::calculateHitbox(tinyobj::attrib_t& attrib){
   if(attrib.vertices.empty()){
     return;
   }
-  hitboxMin = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
-  hitboxMax = hitboxMin;
+  this->min = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
+  this->max = this->min;
   for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
     glm::vec3 vertex(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
-    hitboxMin = glm::min(hitboxMin, vertex);
-    hitboxMax = glm::max(hitboxMax, vertex);
+    this->min = glm::min(this->min, vertex);
+    this->max = glm::max(this->max, vertex);
   }
 }
 
 void AxisAlignedBoundingBox::translate(float x, float y, float z){
   glm::vec3 translation(x, y, z);
-  hitboxMin += translation;
-  hitboxMax += translation;
+  this->min += translation;
+  this->max += translation;
 }
 
 void AxisAlignedBoundingBox::scale(const glm::vec3& scale){
-  hitboxMin *= scale;
-  hitboxMax *= scale;
+  this->min *= scale;
+  this->max *= scale;
 }
 
 void AxisAlignedBoundingBox::rotateX(float angle){
   glm::mat4 rotation_matrix = Matrices::RotateX(angle);
-  glm::vec4 min(hitboxMin, 1.0f);
-  glm::vec4 max(hitboxMax, 1.0f);
+  glm::vec4 min(this->min, 1.0f);
+  glm::vec4 max(this->max, 1.0f);
   min = rotation_matrix * min;
   max = rotation_matrix * max;
-  hitboxMin = glm::vec3(min);
-  hitboxMax = glm::vec3(max);
+  this->min = glm::vec3(min);
+  this->max = glm::vec3(max);
 }
 
 void AxisAlignedBoundingBox::rotateY(float angle){
   glm::mat4 rotation_matrix = Matrices::RotateY(angle);
-  glm::vec4 min(hitboxMin, 1.0f);
-  glm::vec4 max(hitboxMax, 1.0f);
+  glm::vec4 min(this->min, 1.0f);
+  glm::vec4 max(this->max, 1.0f);
   min = rotation_matrix * min;
   max = rotation_matrix * max;
-  hitboxMin = glm::vec3(min);
-  hitboxMax = glm::vec3(max);
+  this->min = glm::vec3(min);
+  this->max = glm::vec3(max);
 }
 
 void AxisAlignedBoundingBox::rotateZ(float angle){
   glm::mat4 rotation_matrix = Matrices::RotateZ(angle);
-  glm::vec4 min(hitboxMin, 1.0f);
-  glm::vec4 max(hitboxMax, 1.0f);
+  glm::vec4 min(this->min, 1.0f);
+  glm::vec4 max(this->max, 1.0f);
   min = rotation_matrix * min;
   max = rotation_matrix * max;
-  hitboxMin = glm::vec3(min);
-  hitboxMax = glm::vec3(max);
+  this->min = glm::vec3(min);
+  this->max = glm::vec3(max);
 }
 
 
@@ -128,14 +132,14 @@ void AxisAlignedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
 
 void AxisAlignedBoundingBox::resetVertices(){
   glm::vec3 vertices[8] = {
-      hitboxMin,
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-      glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-      hitboxMax,
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
+      this->min,
+      glm::vec3(this->max.x, this->min.y, this->min.z),
+      glm::vec3(this->max.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->min.y, this->max.z),
+      glm::vec3(this->max.x, this->min.y, this->max.z),
+      this->max,
+      glm::vec3(this->min.x, this->max.y, this->max.z)
   };
   for(int i=0;i<8;i++){
     this->vertices[i]=vertices[i];
@@ -151,14 +155,14 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
     };
 
     glm::vec3 vertices[8] = {
-        hitboxMin,
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-        glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-        hitboxMax,
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
+        this->min,
+        glm::vec3(this->max.x, this->min.y, this->min.z),
+        glm::vec3(this->max.x, this->max.y, this->min.z),
+        glm::vec3(this->min.x, this->max.y, this->min.z),
+        glm::vec3(this->min.x, this->min.y, this->max.z),
+        glm::vec3(this->max.x, this->min.y, this->max.z),
+        this->max,
+        glm::vec3(this->min.x, this->max.y, this->max.z)
     };
 
     GLuint VAO, VBO, EBO;
@@ -166,7 +170,7 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    glUniformMatrix4fv(gpuProgramController.GetModelUniform(), 1, GL_FALSE, glm::value_ptr(Matrices::Identity())); //resetando o model matrix para desenhar o hitbox
+    /*glUniformMatrix4fv(gpuProgramController.GetModelUniform(), 1, GL_FALSE, glm::value_ptr(Matrices::Identity())); //resetando o model matrix para desenhar o this->*/
 
     glBindVertexArray(VAO);
 
@@ -183,6 +187,9 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
     glBindVertexArray(0);
 
     glBindVertexArray(VAO);
+
+
+    gpuProgramController.DrawObjectHitbox(VAO, Matrices::Identity(), 0, glm::vec3(1.0f, 0.0f, 0.0f), this->min, this->max);
     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
@@ -191,31 +198,46 @@ void AxisAlignedBoundingBox::draw(GpuProgramController& gpuProgramController){
     glDeleteBuffers(1, &EBO);
 }
 
+glm::vec3 AxisAlignedBoundingBox::getMin(){
+  return this->min;
+}
 
-bool AxisAlignedBoundingBox::checkCollision(Hitbox* hitbox){
-  hitboxType = hitbox->getHitboxType();
-  //std::cout<<"testando colisoes"<<std::endl;
-  //dependendo do tipo de hitbox, a colisao sera feita de uma forma
-  if(hitboxType == HitboxType::AABB){
-    return Collisions::AABBsTest(this->getHitboxMin(), this->getHitboxMax(), hitbox->getHitboxMin(), hitbox->getHitboxMax());
-  }
-  else{
-    throw std::invalid_argument("Hitbox type not supported");
-  }
-};
+glm::vec3 AxisAlignedBoundingBox::getMax(){
+  return this->max;
+}
+
+
+bool AxisAlignedBoundingBox::checkCollision(Hitbox* hitbox) {
+    HitboxType hitboxType = hitbox->getHitboxType();
+    // Depending on the type of hitbox, the collision will be handled differently
+    if (hitboxType == HitboxType::AABB) {
+        /*std::cout << "Testing collision between AABBs\n";*/
+        return Collisions::AABBsTest(this->getMin(), this->getMax(), ((AxisAlignedBoundingBox*)hitbox)->getMin(), ((AxisAlignedBoundingBox*)hitbox)->getMax());
+    } else if (hitboxType == HitboxType::SPHERE) {
+        // Cast hitbox to SphereHitbox
+        SphereHitbox* sphereHitbox = dynamic_cast<SphereHitbox*>(hitbox);
+        /*std::cout<<"testando hitbox AABB com hitbox esfera"<<std::endl;*/
+        /*std::cout<<"Min: "<<this->getMin().x<<" "<<this->getMin().y<<" "<<this->getMin().z<<std::endl;*/
+        //printa os dados da esfera
+        /*std::cout<<"Centro da esfera: "<<sphereHitbox->getCenter().x<<" "<<sphereHitbox->getCenter().y<<" "<<sphereHitbox->getCenter().z<<std::endl;*/
+        return Collisions::SphereABBTest(sphereHitbox->getCenter(), sphereHitbox->getRadius(), this->getMin(), this->getMax());
+    } else {
+        throw std::invalid_argument("Hitbox type not supported");
+    }
+}
 
 OrientedBoundingBox::OrientedBoundingBox(tinyobj::attrib_t& attrib){
   calculateHitbox(attrib);
   this->hitboxType = HitboxType::OBB;
   glm::vec3 vertices[8] = {
-      hitboxMin,
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-      glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-      hitboxMax,
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
+      this->min,
+      glm::vec3(this->max.x, this->min.y, this->min.z),
+      glm::vec3(this->max.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->min.y, this->max.z),
+      glm::vec3(this->max.x, this->min.y, this->max.z),
+      this->max,
+      glm::vec3(this->min.x, this->max.y, this->max.z)
   };
   for(int i=0;i<8;i++){
     this->vertices.push_back(vertices[i]);
@@ -226,24 +248,32 @@ void OrientedBoundingBox::calculateHitbox(tinyobj::attrib_t& attrib){
   if(attrib.vertices.empty()){
     return;
   }
-  hitboxMin = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
-  hitboxMax = hitboxMin;
+  this->min = glm::vec3(attrib.vertices[0], attrib.vertices[1], attrib.vertices[2]);
+  this->max = this->min;
   for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
     glm::vec3 vertex(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
-    hitboxMin = glm::min(hitboxMin, vertex);
-    hitboxMax = glm::max(hitboxMax, vertex);
+    this->min = glm::min(this->min, vertex);
+    this->max = glm::max(this->max, vertex);
   }
-  center = (hitboxMin + hitboxMax) / 2.0f;
-  halfSize = (hitboxMax - hitboxMin) / 2.0f;
+  center = (this->min + this->max) / 2.0f;
+  halfSize = (this->max - this->min) / 2.0f;
   axis[0] = glm::vec3(1.0f, 0.0f, 0.0f);
   axis[1] = glm::vec3(0.0f, 1.0f, 0.0f);
   axis[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
+glm::vec3 OrientedBoundingBox::getMin(){
+  return this->min;
+}
+
+glm::vec3 OrientedBoundingBox::getMax(){
+  return this->max;
+}
+
 void OrientedBoundingBox::translate(float x, float y, float z){
   glm::vec3 translation(x, y, z);
-  hitboxMin += translation;
-  hitboxMax += translation;
+  this->min += translation;
+  this->max += translation;
   center += translation;
 }
 
@@ -261,13 +291,13 @@ void OrientedBoundingBox::rotateX(float angle) {
     // Cria a matriz de rotação em torno do eixo X
     glm::mat4 rotationMatrix = Matrices::RotateX(angle);
     //aplica a matriz no hitbox minimo e maximo
-    glm::vec4 min(hitboxMin, 1.0f);
-    glm::vec4 max(hitboxMax, 1.0f);
+    glm::vec4 min(this->min, 1.0f);
+    glm::vec4 max(this->max, 1.0f);
     min = rotationMatrix * min;
     max = rotationMatrix * max;
-    hitboxMin = glm::vec3(min);
-    hitboxMax = glm::vec3(max);
-    center = (hitboxMin + hitboxMax) / 2.0f;
+    this->min = glm::vec3(min);
+    this->max = glm::vec3(max);
+    center = (this->min + this->max) / 2.0f;
 
     // Rotaciona cada eixo do OBB
     for (int i = 0; i < 3; ++i) {
@@ -316,10 +346,8 @@ void OrientedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
       std::cout<<axis[i].x<<" "<<axis[i].y<<" "<<axis[i].z<<std::endl;
     }
 
-    glm::vec3 hitboxMax=this->getHitboxMax();  
-    glm::vec3 hitboxMin=this->getHitboxMin(); 
-    halfSize = (hitboxMax - hitboxMin) / 2.0f;
-    center = (hitboxMin + hitboxMax) / 2.0f;
+    halfSize = (this->max - this->min) / 2.0f;
+    center = (this->min + this->max) / 2.0f;
 
     axis[0] = glm::normalize(glm::vec3(model_matrix * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f)));
     axis[1] = glm::normalize(glm::vec3(model_matrix * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f)));
@@ -328,14 +356,14 @@ void OrientedBoundingBox::UpdateHitbox(glm::mat4 model_matrix){
 
 void OrientedBoundingBox::resetVertices(){
   glm::vec3 vertices[8] = {
-      hitboxMin,
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-      glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-      hitboxMax,
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
+      this->min,
+      glm::vec3(this->max.x, this->min.y, this->min.z),
+      glm::vec3(this->max.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->max.y, this->min.z),
+      glm::vec3(this->min.x, this->min.y, this->max.z),
+      glm::vec3(this->max.x, this->min.y, this->max.z),
+      this->max,
+      glm::vec3(this->min.x, this->max.y, this->max.z)
   };
   this->vertices.clear();
   for(int i=0;i<8;i++){
@@ -429,19 +457,6 @@ bool OrientedBoundingBox::checkCollision(Hitbox* hitbox){
 SphereHitbox::SphereHitbox(tinyobj::attrib_t& attrib){
   calculateHitbox(attrib);
   this->hitboxType = HitboxType::SPHERE;
-  glm::vec3 vertices[8] = {
-      hitboxMin,
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-      glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-      glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-      glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-      hitboxMax,
-      glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
-  };
-  for(int i=0;i<8;i++){
-    this->vertices.push_back(vertices[i]);
-  }
 }
 
 void SphereHitbox::calculateHitbox(tinyobj::attrib_t& attrib){
@@ -465,9 +480,6 @@ void SphereHitbox::calculateHitbox(tinyobj::attrib_t& attrib){
       radiusD = glm::max(radiusD, distanceToCenter);
     }
 
-    // Convert back to single precision
-    hitboxMin = glm::vec3(hitboxMinD);
-    hitboxMax = glm::vec3(hitboxMaxD);
     center = glm::vec3(centerD);
     radius = static_cast<float>(radiusD);
 }
@@ -506,22 +518,6 @@ void SphereHitbox::UpdateHitbox(glm::mat4 model_matrix){
 }
 
 
-void SphereHitbox::resetVertices(){
-    glm::vec3 vertices[8] = {
-        hitboxMin,
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMin.z),
-        glm::vec3(hitboxMax.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMin.z),
-        glm::vec3(hitboxMin.x, hitboxMin.y, hitboxMax.z),
-        glm::vec3(hitboxMax.x, hitboxMin.y, hitboxMax.z),
-        hitboxMax,
-        glm::vec3(hitboxMin.x, hitboxMax.y, hitboxMax.z)
-    };
-    this->vertices.clear();
-    for(int i=0;i<8;i++){
-        this->vertices.push_back(vertices[i]);
-    }
-}
 
 void SphereHitbox::calculateVertices(){
   const int stacks = 10;
@@ -621,4 +617,12 @@ bool SphereHitbox::checkCollision(Hitbox* hitbox){
   else {
     throw std::invalid_argument("Hitbox type not supported");
   }
+}
+
+glm::vec3 SphereHitbox::getCenter(){
+  return center;
+}
+
+float SphereHitbox::getRadius(){
+  return radius;
 }

@@ -24,6 +24,7 @@ set(SOURCES
   src/collisions.cpp                # Colisões
   src/cutScene.cpp
   src/Hitbox.cpp
+  src/Animation.cpp
 )
 
 

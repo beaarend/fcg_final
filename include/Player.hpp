@@ -1,6 +1,7 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
+#include "SceneObject.hpp"
 #include "lookAtCamera.h"
 #include "freeCamera.hpp"
 
@@ -13,6 +14,7 @@
 #include <GLFW/glfw3.h>
 // Matrices
 #include <glm/vec4.hpp>
+#include <vector>
 
 enum struct CameraMode
 {
@@ -29,13 +31,14 @@ private:
     const float GRAVITY = 0.1f;
     const float JUMP_STRENGHT = 2.5f;
 
-    void UpdatePosition(float delta_time);
+    void UpdatePosition(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor);
 
     // Keys
     bool pressing_W;
     bool pressing_A;
     bool pressing_S;
     bool pressing_D;
+    bool pressing_C;
 
     bool pressed_P;
 
@@ -49,7 +52,7 @@ private:
     
 public:
     Player();
-    void Update(float delta_time);
+    void Update(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor);
     void Print();
     glm::vec4 position;
 

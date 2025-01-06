@@ -273,13 +273,6 @@ SceneObject::SceneObject(const char *filename, const char *flag, HitboxType hitb
 }
 
 
-glm::vec3 SceneObject::getHitboxMax() {
-    return this->hitbox->getHitboxMax();
-}
-
-glm::vec3 SceneObject::getHitboxMin() {
-    return this->hitbox->getHitboxMin();
-}
 
 
 void SceneObject::render(GpuProgramController& gpuProgramController)
@@ -295,6 +288,7 @@ void SceneObject::render(GpuProgramController& gpuProgramController)
         glDrawElements(GL_TRIANGLES, shape.num_indices, GL_UNSIGNED_INT, (void *)(shape.first_index * sizeof(GLuint)));
     }
     glBindVertexArray(0);
+    /*std::cout<<this->hitbox<<std::endl;*/
     this->hitbox->draw(gpuProgramController);
 }
 
@@ -400,4 +394,8 @@ glm::vec3 SceneObject::getBboxMin(){
 }
 glm::vec3 SceneObject::getBboxMax(){
   return this->bbox_max;
+}
+
+int SceneObject::getID(){
+  return this->object_id;
 }

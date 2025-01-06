@@ -1,4 +1,6 @@
 #include "Player.hpp"
+#include "SceneObject.hpp"
+#include <vector>
 
 Player::Player()
 {
@@ -38,7 +40,7 @@ void Player::AddFreeCamera(FreeCamera *free_camera)
     this->free_camera = free_camera;
 }
 
-void Player::UpdatePosition(float delta_time)
+void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor)
 {
     if (this->pressing_W){
         this->position.z -= PLAYER_SPEED * delta_time;
@@ -56,25 +58,39 @@ void Player::UpdatePosition(float delta_time)
         this->position.x += PLAYER_SPEED * delta_time;
         std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
     }
+    /*if (this->pressing_C){*/
+    /*  this->position.y -= PLAYER_SPEED * delta_time;*/
+    /*}*/
 
     
-    if (this->is_jumping)
+  if (this->is_jumping)
+  {
+    this->position.y += this->jump_velocity * delta_time;
+    this->jump_velocity -= GRAVITY;
+    if (this->position.y <= 0.0f)
     {
-        this->position.y += this->jump_velocity * delta_time;
-        this->jump_velocity -= GRAVITY;
-        if (this->position.y <= 0.0f)
-        {
-            this->position.y = 0.0f;
-            this->is_jumping = false;
-        }
+      this->position.y = 0.0f;
+      this->is_jumping = false;
     }
-
-    // TODO: Colisão com objetos e com o chão (tecnicamente pronto com o if de cima ali mas né)
+  }
+  /*else{*/
+  /*  for(auto object : objects){*/
+  /*    if(object->checkCollision(*floor)){*/
+  /*      /*std::cout<<"COLIDIU"<<std::endl;*/
+  /*      this->is_jumping = false;*/
+  /*    }else{*/
+  /*      if(!this->is_jumping)*/
+  /*        /*this->position.y -= GRAVITY;*/
+  /*    } */
+  /*  }*/
+  /*}*/
+   
+    
 }
 
-void Player::Update(float delta_time)
+void Player::Update(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor)
 {   
-    this->UpdatePosition(delta_time);
+    this->UpdatePosition(delta_time,objects,floor);
 
     switch(this->camera_mode)
     {
@@ -113,6 +129,9 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
             break;
         case GLFW_KEY_P:
             key_pressed = "P";
+            break;
+        case GLFW_KEY_C:
+            key_pressed = "C";
             break;
         }
     std::string action_string = "";
@@ -153,6 +172,10 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_D && action == GLFW_RELEASE)
     {
         this->pressing_D = false;
+    }
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
+    {
+        this->pressing_C = true;
     }
 
     // Jump key
