@@ -351,10 +351,10 @@ int main(int argc, char* argv[])
         faustaoParts.push_back(std::move(individualObject));
     }
 
-    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
-    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
-    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
-    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture03
+    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture0
+    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture1
+    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture2
+    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture3
 
     SceneObject rampObject("../../resources/objects/plane.obj", "unique");
     rampObject.setObjectID(PLANE);
@@ -466,6 +466,7 @@ int main(int argc, char* argv[])
         }
 
         rampObject.render(gpu_controller);
+        floorObject.render(gpu_controller);
         
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
         // terceiro cubo.

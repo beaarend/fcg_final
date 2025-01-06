@@ -81,6 +81,8 @@ void main()
     float U = 0.0;
     float V = 0.0;
 
+    vec3 texture_color = vec3(1.5, 0.0, 0.0);
+
     if ( object_id == SPHERE )
     {
         // PREENCHA AQUI
@@ -105,31 +107,50 @@ void main()
     {
         // PREENCHA AQUI
         // Propriedades espectrais do plano
-        Kd = objectColor;
-        //Kd = texture(TextureImage3, texcoords).rgb;
+        Kd = vec3(0.8,0.8,0.8);
         Ks = vec3(0.8,0.8,0.8);
         Ka = vec3(0.0,0.0,0.0);
         q = 32.0;
+
+        float scaling = 0.5;
+
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+  
+        //float U = normal.x > 0.0 ? fract(position_model.x * scaling) : fract(position_model.z * scaling);
+        //float V = fract(position_model.y * scaling);
+        float U = fract(position_model.x * scaling);
+        float V = fract(position_model.z * scaling);
+        vec2 texcoords_planar = vec2(U, V);
+
+        texture_color = texture(TextureImage3, texcoords_planar).rgb;
     }
     else if (object_id == FAUSTAO_HAIR)
     {
-        Kd = texture(TextureImage1, texcoords).rgb;
+        texture_color = texture(TextureImage1, texcoords).rgb;
+        Kd = vec3(0.8,0.8,0.8);
         Ks = vec3(0.8,0.8,0.8);
-        Ka = vec3(0.0,0.0,0.0);
+        Ka = vec3(1.5,1.5,1.5);
         q = 32.0;
     }
     else if (object_id == FAUSTAO_FACE)
     {
-        Kd = texture(TextureImage0, texcoords).rgb;
+        texture_color = texture(TextureImage0, texcoords).rgb;
+        Kd = vec3(0.8,0.8,0.8);
         Ks = vec3(0.8,0.8,0.8);
-        Ka = vec3(0.0,0.0,0.0);
+        Ka = vec3(1.5,1.5,1.5);
         q = 32.0;
     }
     else if (object_id == FAUSTAO_CLOTHES)
     {
-        Kd = texture(TextureImage2, texcoords).rgb;
-        Ks = vec3(0.8,0.8,0.8);
-        Ka = vec3(0.0,0.0,0.0);
+        texture_color = texture(TextureImage2, texcoords).rgb;
+        Kd = vec3(0.8,0.8,0.8);
+        Ks = vec3(1.0,1.0,1.0);
+        Ka = vec3(1.5,1.5,1.5);
         q = 32.0;
     }
     else // Objeto desconhecido = preto 
@@ -158,22 +179,28 @@ void main()
     // REQUISITO: Iluminação difusa (Lambert) e Blinn-Phong
     if (object_id == FAUSTAO_HAIR || object_id == FAUSTAO_CLOTHES || object_id == FAUSTAO_FACE)
     {
-        color.rgb = lambert_diffuse_term + ambient_term;
+        color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
     }
 
     // REQUISITO: Modelo de Gouraud -> calcular no shader_vertex POR ENQUANTO NORMAL
     else if (object_id == PLANE)
     {
-        color.rgb = lambert_diffuse_term + ambient_term;
+        color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
     }
 
     // REQUISITO: Modelo de Phong
     else if (object_id == SPHERE)
     {
-        color.rgb = lambert_diffuse_term + ambient_term + phong_specular_term;
+        color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
     }
 
     color.a = 1;
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
-} 
+    
+    if(texture_color == vec3(0.0,0.0,0.0))
+    {
+        color.rgb = vec3(1.0,0.0,0.0);
+    }
+
+    } 
 
