@@ -53,129 +53,64 @@ bool Collisions::OBBsTest(
     const glm::vec3& center1, const glm::vec3& halfSize1, const glm::vec3 axis1[3],
     const glm::vec3& center2, const glm::vec3& halfSize2, const glm::vec3 axis2[3]
 ) {
-    // std::cout<<"testando colisoes entre OBBs"<<std::endl;
-    // std::cout<<"center1: "<<center1.x<<" "<<center1.y<<" "<<center1.z<<std::endl;
-    // std::cout<<"center2: "<<center2.x<<" "<<center2.y<<" "<<center2.z<<std::endl;
-    // std::cout<<"halfSize1: "<<halfSize1.x<<" "<<halfSize1.y<<" "<<halfSize1.z<<std::endl;
-    // std::cout<<"halfSize2: "<<halfSize2.x<<" "<<halfSize2.y<<" "<<halfSize2.z<<std::endl;
-    // for(int i=0;i<3;i++){
-    //   std::cout<<"axis1: "<<axis1[i].x<<" "<<axis1[i].y<<" "<<axis1[i].z<<std::endl;
-    //   std::cout<<"axis2: "<<axis2[i].x<<" "<<axis2[i].y<<" "<<axis2[i].z<<std::endl;
-    // }
-    glm::vec3 relativePos = center2 - center1;
 
-    if (GetSeparatingPlane(relativePos, axis1[0], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, axis1[1], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, axis1[2], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, axis2[0], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, axis2[1], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, axis2[2], halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[0]), vec3ToVec4(axis2[0]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[0]), vec3ToVec4(axis2[1]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[0]), vec3ToVec4(axis2[2]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[1]), vec3ToVec4(axis2[0]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[1]), vec3ToVec4(axis2[1]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[1]), vec3ToVec4(axis2[2]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[2]), vec3ToVec4(axis2[0]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[2]), vec3ToVec4(axis2[1]))), halfSize1, axis1, halfSize2, axis2) ||
-        GetSeparatingPlane(relativePos, vec3ToVec4(Matrices::CrossProduct(vec3ToVec4(axis1[2]), vec3ToVec4(axis2[2]))), halfSize1, axis1, halfSize2, axis2)) {
-        return false; // Existe um plano separador
+    std::cout<<"testando colisao entre OBBs"<<std::endl;
+    std::cout<<"Center1: "<<center1.x<<" "<<center1.y<<" "<<center1.z<<std::endl;
+    std::cout<<"Center2: "<<center2.x<<" "<<center2.y<<" "<<center2.z<<std::endl;
+    std::cout<<"HalfSize1: "<<halfSize1.x<<" "<<halfSize1.y<<" "<<halfSize1.z<<std::endl;
+    std::cout<<"HalfSize2: "<<halfSize2.x<<" "<<halfSize2.y<<" "<<halfSize2.z<<std::endl;
+    std::cout<<"Axis1: "<<std::endl;
+    for(int i=0;i<3;i++){
+      std::cout<<axis1[i].x<<" "<<axis1[i].y<<" "<<axis1[i].z<<std::endl;
+    }
+    std::cout<<"Axis2: "<<std::endl;
+    for(int i=0;i<3;i++){
+      std::cout<<axis2[i].x<<" "<<axis2[i].y<<" "<<axis2[i].z<<std::endl;
+    }
+    // Vetor entre os centros dos dois OBBs
+    glm::vec3 d = center2 - center1;
+
+    // Matriz de transformações entre os sistemas de coordenadas dos OBBs
+    float R[3][3];
+    float AbsR[3][3]; // Matriz com valores absolutos de R
+
+    // Calcular R e AbsR
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            R[i][j] = glm::dot(axis1[i], axis2[j]);
+            AbsR[i][j] = std::abs(R[i][j]) + 1e-6f; // Adiciona um pequeno valor para evitar problemas numéricos
+        }
     }
 
-    // Não há plano separador, os OBBs colidem
+    // Testar os eixos locais do primeiro OBB (L = A0, A1, A2)
+    for (int i = 0; i < 3; ++i) {
+        float ra = halfSize1[i];
+        float rb = halfSize2.x * AbsR[i][0] + halfSize2.y * AbsR[i][1] + halfSize2.z * AbsR[i][2];
+        if (std::abs(glm::dot(d, axis1[i])) > ra + rb) return false;
+    }
+
+    // Testar os eixos locais do segundo OBB (L = B0, B1, B2)
+    for (int i = 0; i < 3; ++i) {
+        float ra = halfSize1.x * AbsR[0][i] + halfSize1.y * AbsR[1][i] + halfSize1.z * AbsR[2][i];
+        float rb = halfSize2[i];
+        if (std::abs(glm::dot(d, axis2[i])) > ra + rb) return false;
+    }
+
+    // Testar os eixos cruzados (L = A0 x B0, A0 x B1, ..., A2 x B2)
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            float ra = halfSize1[(i + 1) % 3] * AbsR[(i + 2) % 3][j] + halfSize1[(i + 2) % 3] * AbsR[(i + 1) % 3][j];
+            float rb = halfSize2[(j + 1) % 3] * AbsR[i][(j + 2) % 3] + halfSize2[(j + 2) % 3] * AbsR[i][(j + 1) % 3];
+            if (std::abs(d[(i + 2) % 3] * R[(i + 1) % 3][j] - d[(i + 1) % 3] * R[(i + 2) % 3][j]) > ra + rb)
+                return false;
+        }
+    }
+
+    // Nenhum eixo separador foi encontrado: os OBBs estão colidindo
     return true;
 }
 
-bool Collisions::TestOBBCollisionVertices(glm::vec3* verticesA, glm::vec3* verticesB) {
-
-    glm::vec3 verticeMaxA = verticesA[0];
-    glm::vec3 verticeMinA = verticesA[0];
-    glm::vec3 verticeMaxB = verticesB[0];
-    glm::vec3 verticeMinB = verticesB[0];
-    for(int i=0;i<8;i++){
-        verticeMaxA = glm::max(verticeMaxA, verticesA[i]);
-        verticeMinA = glm::min(verticeMinA, verticesA[i]);
-        verticeMaxB = glm::max(verticeMaxB, verticesB[i]);
-        verticeMinB = glm::min(verticeMinB, verticesB[i]);
-    }
-
-    // Calcula o centro de cada OBB
-    glm::vec3 centerA = (verticeMaxA + verticeMinA) * 0.5f; 
-    glm::vec3 centerB = (verticeMaxB + verticeMinB) * 0.5f;
-    
-
-    // Calcula os eixos principais de cada OBB
-    glm::vec3 axisA[3] = {
-        glm::normalize(verticesA[1] - verticesA[0]), // Eixo X de A
-        glm::normalize(verticesA[3] - verticesA[0]), // Eixo Y de A
-        glm::normalize(verticesA[4] - verticesA[0])  // Eixo Z de A
-    };
-
-    glm::vec3 axisB[3] = {
-        glm::normalize(verticesB[1] - verticesB[0]), // Eixo X de B
-        glm::normalize(verticesB[3] - verticesB[0]), // Eixo Y de B
-        glm::normalize(verticesB[4] - verticesB[0])  // Eixo Z de B
-    };
-
-    // Calcula o halfSize de cada OBB
-    glm::vec3 halfSizeA = (verticeMaxA - verticeMinA) * 0.5f; 
-    glm::vec3 halfSizeB = (verticeMaxB - verticeMinB) * 0.5f;
-
-    // Vetor entre os centros dos OBBs
-    glm::vec3 translation = centerB - centerA;
-
-    // Matriz de produtos escalares entre os eixos dos dois OBBs
-    float rotation[3][3];
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            rotation[i][j] = glm::dot(axisA[i], axisB[j]);
-        }
-    }
-
-    // Testa os eixos principais dos dois OBBs
-    for (int i = 0; i < 3; i++) {
-        float projectionA = halfSizeA[i];
-        float projectionB =
-            glm::abs(rotation[i][0]) * halfSizeB.x +
-            glm::abs(rotation[i][1]) * halfSizeB.y +
-            glm::abs(rotation[i][2]) * halfSizeB.z;
-
-        if (glm::abs(glm::dot(translation, axisA[i])) > projectionA + projectionB)
-            return false; // Separação encontrada
-    }
-
-    for (int j = 0; j < 3; j++) {
-        float projectionA =
-            glm::abs(rotation[0][j]) * halfSizeA.x +
-            glm::abs(rotation[1][j]) * halfSizeA.y +
-            glm::abs(rotation[2][j]) * halfSizeA.z;
-
-        float projectionB = halfSizeB[j];
-
-        if (glm::abs(glm::dot(translation, axisB[j])) > projectionA + projectionB)
-            return false; // Separação encontrada
-    }
-
-    // Testa os nove eixos cruzados (produtos vetoriais dos eixos)
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            glm::vec3 crossAxis = glm::cross(axisA[i], axisB[j]);
-
-            float projectionA =
-                glm::abs(glm::dot(crossAxis, axisA[0])) * halfSizeA.x +
-                glm::abs(glm::dot(crossAxis, axisA[1])) * halfSizeA.y +
-                glm::abs(glm::dot(crossAxis, axisA[2])) * halfSizeA.z;
-
-            float projectionB =
-                glm::abs(glm::dot(crossAxis, axisB[0])) * halfSizeB.x +
-                glm::abs(glm::dot(crossAxis, axisB[1])) * halfSizeB.y +
-                glm::abs(glm::dot(crossAxis, axisB[2])) * halfSizeB.z;
-
-            if (glm::abs(glm::dot(translation, crossAxis)) > projectionA + projectionB)
-                return false; // Separação encontrada
-        }
-    }
-
-    // Se nenhuma separação foi encontrada, os OBBs colidem
-    return true;
+bool Collisions::SpheresTest(const glm::vec3& center1, float radius1, const glm::vec3& center2, float radius2) {
+    float distance = glm::distance(center1, center2);
+    return distance < radius1 + radius2;
 }

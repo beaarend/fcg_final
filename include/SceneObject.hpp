@@ -22,8 +22,8 @@ private:
   glm::vec3 object_color=glm::vec3(0.5f,0.5f,0.5f);
   Hitbox* hitbox=nullptr;
   
-  glm::vec3 hitboxMin;
-  glm::vec3 hitboxMax;
+  /*glm::vec3 hitboxMin;*/
+  /*glm::vec3 hitboxMax;*/
 
   glm::vec3 bbox_min;
   glm::vec3 bbox_max;
@@ -31,11 +31,11 @@ private:
 
 
 public:
-    SceneObject(const char* filename, const char *flag);
+    SceneObject(const char* filename, const char *flag, HitboxType hitboxType);
 
     SceneObject(const tinyobj::attrib_t &attrib, 
                          const tinyobj::shape_t &shape, 
-                         const std::vector<tinyobj::material_t> &materials);
+                         const std::vector<tinyobj::material_t> &materials,HitboxType hitboxType);
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -48,6 +48,8 @@ public:
     size_t first_index;
     size_t num_indices;
     GLenum rendering_mode;
+    glm::vec3 center;
+    glm::vec3 curr_center;
     void render(GpuProgramController& gpuProgramController);
     bool checkCollision( SceneObject& other);
     void AdjustHitboxPoints();
@@ -65,6 +67,7 @@ public:
     void setModelMatrix(glm::mat4 model_matrix);
     void setObjectColor(glm::vec3 object_color);
     Hitbox* getHitbox();
-
+    glm::vec3 getBboxMin(); 
+    glm::vec3 getBboxMax();
     bool getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal);
 };
