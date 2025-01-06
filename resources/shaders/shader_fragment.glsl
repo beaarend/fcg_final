@@ -22,6 +22,7 @@ in vec4 position_world;
 in vec4 normal;
 in vec4 position_model;
 in vec2 texcoords;
+in vec3 gouraud_shading_term;
 
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
@@ -37,6 +38,7 @@ uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
 uniform sampler2D TextureImage3;
+uniform sampler2D TextureImage4;
 
 uniform int object_id;
 uniform vec3 objectColor;
@@ -83,15 +85,27 @@ void main()
 
     vec3 texture_color = vec3(1.5, 0.0, 0.0);
 
-    if ( object_id == SPHERE )
+    if (object_id == SPHERE)
     {
-        // PREENCHA AQUI
-        // Propriedades espectrais da esfera
-        Kd = vec3(0.8,0.4,0.08);
-        Ks = vec3(0.0,0.0,0.0);
-        Ka = vec3(0.4,0.2,0.04);
+        // Spectral properties of the sphere
+        Kd = vec3(0.4,0.4,0.4);
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
-        //Kd = texture(TextureImage3, texcoords).rgb;
+
+        // Scaling factor for texture coordinates
+        float scaling = 0.5; // Adjust this value as needed
+
+        // Calculate spherical UV coordinates
+        vec3 normalized_position = normalize(position_model.xyz); // Normalize position to sphere
+        float U = 0.5 + atan(normalized_position.z, normalized_position.x) / (2.0 * M_PI); // Longitude
+        float V = 0.5 - asin(normalized_position.y) / M_PI;                                // Latitude
+
+        // Apply scaling
+        vec2 texcoords_sphere = vec2(U, V) * scaling;
+
+        // Sample texture
+        texture_color = texture(TextureImage4, texcoords_sphere).rgb;
     }
     else if ( object_id == BUNNY )
     {
@@ -185,7 +199,7 @@ void main()
     // REQUISITO: Modelo de Gouraud -> calcular no shader_vertex POR ENQUANTO NORMAL
     else if (object_id == PLANE)
     {
-        color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
+        color.rgb = (lambert_diffuse_term + ambient_term + gouraud_shading_term) * texture_color;
     }
 
     // REQUISITO: Modelo de Phong

@@ -19,6 +19,7 @@ out vec4 position_world;
 out vec4 position_model;
 out vec4 normal;
 out vec2 texcoords;
+out vec3 gouraud_shading_term;
 
 void main()
 {
@@ -63,5 +64,18 @@ void main()
 
     // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
     texcoords = texture_coefficients;
+
+    vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
+    vec3 Ks = vec3(0.8,0.8,0.8);
+    vec4 n = normalize(normal);
+    vec4 l = normalize(vec4(1.0,1.0,0.5,0.0));
+    vec4 p = position_world;
+    vec4 camera_position = inverse(view) * origin;
+    vec4 v = normalize(camera_position - p);
+    vec4 half_vector = normalize(v + l);
+    float q = 32.0;
+
+    gouraud_shading_term =  Ks * pow(max(0, dot(n, half_vector)), q);
+
 }
 
