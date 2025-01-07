@@ -18,6 +18,8 @@ GpuProgramController::GpuProgramController(GLuint gpu_program_id)
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage0"), 0); // FAUSTAO FACE
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage1"), 1); // FAUSTAO HAIR
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage2"), 2); // FAUSTAO CLOTHES
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage3"), 3); // RAMPAAAAAAAAA
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage4"), 4); // ROCK
     glUseProgram(0);
 }
 

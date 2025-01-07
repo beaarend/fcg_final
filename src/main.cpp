@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < spheres.size(); i++)
     {
         std::cout<<"Creating sphere "<<i<<std::endl;
-        SceneObject* sphereObject = new SceneObject("../../resources/objects/sphere.obj", "unique", HitboxType::SPHERE);
+        SceneObject* sphereObject = new SceneObject("../../resources/objects/enemies/sphere.obj", "unique", HitboxType::SPHERE);
         sphereObject->setObjectID(10+i);
         sphereObject->setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
         sceneObjects.push_back(sphereObject);
@@ -367,12 +367,13 @@ int main(int argc, char* argv[])
         sceneObjects.push_back(individualObject);
     }
 
-    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture01
-    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture02
-    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture03
-    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture03
+    LoadTextureImage("../../resources/objects/faustao/face.jpg"); // texture0
+    LoadTextureImage("../../resources/objects/faustao/hair.jpg"); // texture1
+    LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture2
+    LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture3
+    LoadTextureImage("../../resources/objects/enemies/rock.jpg"); // texture4
 
-    SceneObject rampObject("../../resources/objects/plane.obj", "unique", HitboxType::AABB);
+    SceneObject rampObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB);
     rampObject.setObjectID(PLANE);
     sceneObjects.push_back(&rampObject);
     rampObject.scale(glm::vec3(20.0f, 0.5f, 45.0f));
@@ -469,7 +470,7 @@ int main(int argc, char* argv[])
             {
                 if(object->checkCollision(*sphere))
                 {
-                    std::cout<<"COLIDIU"<<std::endl;
+                    /*std::cout<<"COLIDIU"<<std::endl;*/
                 }
             }
         }
@@ -617,10 +618,6 @@ void LoadShadersFromFiles()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0); // FAUSTAO FACE
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1); // FAUSTAO HAIR
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2); // FAUSTAO CLOTHES
-    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 3); // OBSIDIAN
     glUseProgram(0);
 }
 
