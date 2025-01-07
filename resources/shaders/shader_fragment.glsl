@@ -15,6 +15,8 @@
 
 #define WALL 3
 #define FLOOR 7
+#define TV 8
+#define SCREEN 9
 
 // Atributos de fragmentos recebidos como entrada ("in") pelo Fragment Shader.
 // Neste exemplo, este atributo foi gerado pelo rasterizador como a
@@ -44,6 +46,8 @@ uniform sampler2D TextureImage3;
 uniform sampler2D TextureImage4;
 uniform sampler2D TextureImage5;
 uniform sampler2D TextureImage6;
+uniform sampler2D TextureImage7;
+uniform sampler2D TextureImage8;
 
 uniform int object_id;
 uniform vec3 objectColor;
@@ -220,6 +224,34 @@ void main()
         Ka = vec3(1.5,1.5,1.5);
         q = 32.0;
     }
+    else if (object_id == TV)
+    {
+        texture_color = texture(TextureImage7, texcoords).rgb;
+        Kd = vec3(0.8,0.8,0.8);
+        Ks = vec3(1.0,1.0,1.0);
+        Ka = vec3(1.5,1.5,1.5);
+        q = 32.0;
+    }
+    else if (object_id == SCREEN)
+    {
+        // Set spectral properties for the screen object
+        Kd = vec3(0.8, 0.8, 0.8);
+        Ks = vec3(0.8, 0.8, 0.8);
+        Ka = vec3(0.0, 0.0, 0.0);
+        q = 32.0;
+
+        float scaling = 0.5; // Adjust as needed
+
+        // Generate texture coordinates for the screen
+        float U = (position_model.x + 1.0) / 2.0; // Since bbox_min.x = -1, bbox_max.x = 1
+        float V = (position_model.z + 1.0) / 2.0; // Since bbox_min.z = -1, bbox_max.z = 1
+
+        U = clamp(U, 0.0, 1.0);
+        V = clamp(V, 0.0, 1.0);
+        vec2 texcoords_planar = vec2(U, V);
+
+        texture_color = texture(TextureImage8, texcoords_planar).rgb;
+    }
     else // Objeto desconhecido = preto 
     {
         Kd = objectColor;
@@ -250,16 +282,15 @@ void main()
     }
 
     // REQUISITO: Modelo de Gouraud -> calcular no shader_vertex POR ENQUANTO NORMAL
-    else if (object_id == PLANE)
+    else if (object_id == PLANE || object_id == SCREEN)
     {
         color.rgb = (lambert_diffuse_term + ambient_term + gouraud_shading_term) * texture_color;
     }
 
     // REQUISITO: Modelo de Phong
-    else if (object_id == SPHERE || object_id == WALL || object_id == FLOOR)
+    else if (object_id == SPHERE || object_id == WALL || object_id == FLOOR || object_id == TV)
     {
-        //color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
-        color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
+        color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
     }
 
     color.a = 1;

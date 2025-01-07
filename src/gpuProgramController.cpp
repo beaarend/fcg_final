@@ -22,6 +22,8 @@ GpuProgramController::GpuProgramController(GLuint gpu_program_id)
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage4"), 4); // ROCK
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage5"), 5); // FLOOR
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage6"), 6); // WALL
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage7"), 7); // TV
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage8"), 8); // SCREEN
     glUseProgram(0);
 }
 
