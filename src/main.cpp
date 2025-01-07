@@ -374,6 +374,8 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/faustao/clothes.jpg"); // texture2
     LoadTextureImage("../../resources/objects/ramp/lona.jpg"); // texture3
     LoadTextureImage("../../resources/objects/enemies/rock.jpg"); // texture4
+    LoadTextureImage("../../resources/objects/wall/floor.jpg"); // texture5
+    LoadTextureImage("../../resources/objects/wall/wall.png"); // texture6
 
     SceneObject rampObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB);
     rampObject.setObjectID(PLANE);
@@ -446,7 +448,7 @@ int main(int argc, char* argv[])
     float previous_time = glfwGetTime();
     float current_time = 0.0f;
     float delta_time = 0.0f;
-    gameState = GAMEPLAY;
+    //gameState = GAMEPLAY;
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))

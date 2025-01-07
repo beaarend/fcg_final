@@ -13,6 +13,9 @@
 #define FAUSTAO_FACE 5
 #define FAUSTAO_CLOTHES 6
 
+#define WALL 3
+#define FLOOR 7
+
 // Atributos de fragmentos recebidos como entrada ("in") pelo Fragment Shader.
 // Neste exemplo, este atributo foi gerado pelo rasterizador como a
 // interpolação da posição global e a normal de cada vértice, definidas em
@@ -39,6 +42,8 @@ uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
 uniform sampler2D TextureImage3;
 uniform sampler2D TextureImage4;
+uniform sampler2D TextureImage5;
+uniform sampler2D TextureImage6;
 
 uniform int object_id;
 uniform vec3 objectColor;
@@ -143,6 +148,54 @@ void main()
 
         texture_color = texture(TextureImage3, texcoords_planar).rgb;
     }
+    else if (object_id == FLOOR)
+    {
+        Kd = vec3(0.8,0.8,0.8);
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 32.0;
+
+        float scaling = 1.5;
+
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+  
+        //float U = normal.x > 0.0 ? fract(position_model.x * scaling) : fract(position_model.z * scaling);
+        //float V = fract(position_model.y * scaling);
+        float U = fract(position_model.x * scaling);
+        float V = fract(position_model.z * scaling);
+        vec2 texcoords_planar = vec2(U, V);
+
+        texture_color = texture(TextureImage5, texcoords_planar).rgb;
+    }
+    else if (object_id == WALL)
+    {
+        Kd = vec3(0.8,0.8,0.8);
+        Ks = vec3(0.8,0.8,0.8);
+        Ka = vec3(0.0,0.0,0.0);
+        q = 32.0;
+
+        float scaling = 1.5;
+
+        float minx = bbox_min.x;
+        float maxx = bbox_max.x;
+        float miny = bbox_min.y;
+        float maxy = bbox_max.y;
+        float minz = bbox_min.z;
+        float maxz = bbox_max.z;
+  
+        //float U = normal.x > 0.0 ? fract(position_model.x * scaling) : fract(position_model.z * scaling);
+        //float V = fract(position_model.y * scaling);
+        float U = fract(position_model.x * scaling);
+        float V = fract(position_model.z * scaling);
+        vec2 texcoords_planar = vec2(U, V);
+
+        texture_color = texture(TextureImage6, texcoords_planar).rgb;
+    }
     else if (object_id == FAUSTAO_HAIR)
     {
         texture_color = texture(TextureImage1, texcoords).rgb;
@@ -203,7 +256,7 @@ void main()
     }
 
     // REQUISITO: Modelo de Phong
-    else if (object_id == SPHERE)
+    else if (object_id == SPHERE || object_id == WALL || object_id == FLOOR)
     {
         //color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
         color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
