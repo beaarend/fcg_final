@@ -4,6 +4,7 @@
 #include "SceneObject.hpp"
 #include "lookAtCamera.h"
 #include "freeCamera.hpp"
+#include "Animation.hpp"
 
 #include "matrices.h"
 #include <iostream>
@@ -31,7 +32,7 @@ private:
     const float GRAVITY = 0.1f;
     const float JUMP_STRENGHT = 2.5f;
 
-    void UpdatePosition(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor);
+    void UpdatePosition(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor,std::vector<SceneObject*> spheres);
 
     // Keys
     bool pressing_W;
@@ -49,10 +50,11 @@ private:
     // Mouse
     double cursorPosX, cursorPosY;
     bool pressing_LeftButton;
+    std::vector<Animation*> animations;
     
 public:
     Player();
-    void Update(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor);
+    void Update(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor,std::vector<SceneObject*> spheres);
     void Print();
     glm::vec4 position;
 

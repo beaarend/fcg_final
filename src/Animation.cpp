@@ -1,14 +1,24 @@
 #include "Animation.hpp"
+#include "SceneObject.hpp"
 
-Animation::Animation(SceneObject* object, const glm::vec3& start, const glm::vec3& end, float duration, float startDelay)
-    : object(object), start(start), end(end), duration(duration), elapsedTime(0.0f), ended(false)
+Animation::Animation(const glm::vec3& start, const glm::vec3& end, float duration, float startDelay)
 {
-    object->translate(start.x, start.y, start.z);
+    this->start = start;
+    this->end = end;
+    this->duration = duration;
     this->startDelay = startDelay;
+    this->elapsedTime = 0.0f;
+    this->ended = false;
 }
 
-void Animation::Update(float deltaTime)
+void Animation::Update(float deltaTime,SceneObject* object)
 {
+    /*std::cout<<"Update animation "<<this->ended<<std::endl;*/
+    if(!object)
+    {
+        std::cout<<"Object is null\n";
+        return;
+    }
     if (ended) return;
 
     elapsedTime += deltaTime;
@@ -39,18 +49,18 @@ void Animation::Update(float deltaTime)
     {
         ended = true;
         /*Restart();*/
-        RestartAleatorio();
+        RestartAleatorio(object);
     }
 }
 
-void Animation::Restart()
+void Animation::Restart(SceneObject* object)
 {
     elapsedTime = 0.0f;
     ended = false;
     object->resetModelMatrix();
     object->translate(start.x, start.y, start.z);
 }
-void Animation::RestartAleatorio()
+void Animation::RestartAleatorio(SceneObject* object)
 {
     elapsedTime = 0.0f;
     ended = false;
