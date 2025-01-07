@@ -341,6 +341,8 @@ int main(int argc, char* argv[])
     #define SPHERE 0
     #define BUNNY  1
     #define PLANE  2
+
+    #define WALL 3
     
     // Iterate over shapes in the loaded object
     for (const auto &shape : faustaoObject.shapes)
@@ -385,6 +387,34 @@ int main(int argc, char* argv[])
     /*floorObject.translate(0.0f, -2.0f, 0.4f);*/
     /*floorObject.setObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));*/
 
+    // SceneObject wall0Object("../../resources/objects/wall/plane.obj", "unique", HitboxType::OBB);
+    // wall0Object.setObjectID(WALL);
+    // SceneObject wall1Object("../../resources/objects/wall/plane.obj", "unique", HitboxType::OBB);
+    // wall1Object.setObjectID(WALL);
+    // SceneObject wall2Object("../../resources/objects/wall/plane.obj", "unique", HitboxType::OBB);
+    // wall2Object.setObjectID(WALL);
+    // SceneObject wall3Object("../../resources/objects/wall/plane.obj", "unique", HitboxType::OBB);
+    // wall3Object.setObjectID(WALL);
+
+    // // Position the walls to form a room
+    // wall0Object.scale(glm::vec3(5.0f, 5.0f, 1.0f));
+    // wall0Object.translate(0.0f, 0.0f, -5.0f); // Back wall
+
+    // wall1Object.scale(glm::vec3(5.0f, 5.0f, 1.0f));
+    // wall1Object.translate(0.0f, 0.0f, 5.0f); // Front wall
+
+    // wall2Object.scale(glm::vec3(1.0f, 5.0f, 5.0f));
+    // wall2Object.translate(-5.0f, 0.0f, 0.0f); // Left wall
+
+    // wall3Object.scale(glm::vec3(1.0f, 5.0f, 5.0f));
+    // wall3Object.translate(5.0f, 0.0f, 0.0f); // Right wall
+
+    // // Add walls to the scene
+    // sceneObjects.push_back(&wall0Object);
+    // sceneObjects.push_back(&wall1Object);
+    // sceneObjects.push_back(&wall2Object);
+    // sceneObjects.push_back(&wall3Object);
+
     if ( argc > 1 )
     {
         ObjModel model(argv[1]);
@@ -401,7 +431,6 @@ int main(int argc, char* argv[])
 
     // Locks mouse inside window
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
 
     // Start cameras
     LookAtCamera lookAtCamera(g_ScreenRatio, &gpu_controller);

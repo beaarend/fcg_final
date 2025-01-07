@@ -47,8 +47,8 @@ void GpuProgramController::DrawObjectHitbox(GLuint vertex_array_object_id ,glm::
      /*std::cout << "hitboxMin: " << hitboxMin.x << " " << hitboxMin.y << " " << hitboxMin.z << std::endl;*/
      /*std::cout << "hitboxMax: " << hitboxMax.x << " " << hitboxMax.y << " " << hitboxMax.z << std::endl;*/
 
-    /*glUniform4f(hitbox_min_uniform, hitboxMin.x, hitboxMin.y, hitboxMin.z, 1.0f);*/
-    /*glUniform4f(hitbox_max_uniform, hitboxMax.x, hitboxMax.y, hitboxMax.z, 1.0f);*/
+    glUniform4f(hitbox_min_uniform, hitboxMin.x, hitboxMin.y, hitboxMin.z, 1.0f);
+    glUniform4f(hitbox_max_uniform, hitboxMax.x, hitboxMax.y, hitboxMax.z, 1.0f);
 }
 
 

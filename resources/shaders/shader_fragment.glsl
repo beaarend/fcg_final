@@ -85,10 +85,10 @@ void main()
 
     vec3 texture_color = vec3(1.5, 0.0, 0.0);
 
-    if (object_id == SPHERE)
+    if (object_id >=10)
     {
         // Spectral properties of the sphere
-        Kd = vec3(0.4,0.4,0.4);
+        Kd = vec3(0.8,0.8,0.8);
         Ks = vec3(0.8,0.8,0.8);
         Ka = vec3(0.0,0.0,0.0);
         q = 1.0;
@@ -126,7 +126,7 @@ void main()
         Ka = vec3(0.0,0.0,0.0);
         q = 32.0;
 
-        float scaling = 0.5;
+        float scaling = 1.5;
 
         float minx = bbox_min.x;
         float maxx = bbox_max.x;
@@ -205,8 +205,8 @@ void main()
     // REQUISITO: Modelo de Phong
     else if (object_id == SPHERE)
     {
-        color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
-        // color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
+        //color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
+        color.rgb = (lambert_diffuse_term + ambient_term) * texture_color;
     }
 
     color.a = 1;
