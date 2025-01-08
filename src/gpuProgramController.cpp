@@ -20,6 +20,8 @@ GpuProgramController::GpuProgramController(GLuint gpu_program_id)
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage2"), 2); // FAUSTAO CLOTHES
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage3"), 3); // RAMPAAAAAAAAA
     glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage4"), 4); // ROCK
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage5"), 5); // FLOOR
+    glUniform1i(glGetUniformLocation(gpu_program_id, "TextureImage6"), 6); // WALL
     glUseProgram(0);
 }
 

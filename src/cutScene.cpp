@@ -70,6 +70,9 @@ void CutScene::AddLookAtCamera(LookAtCamera *look_at_camera)
     this->look_at_camera->setAnglePhi(0.0f);
 }
 
+#define WALL 3
+#define FLOOR 7
+
 void CutScene::createSceneObjects() {
     
     // SceneObject sphereObject("../../resources/objects/sphere.obj");
@@ -78,15 +81,40 @@ void CutScene::createSceneObjects() {
     // addSceneObject(sphereObject);
 
     SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB,nullptr);
-    cowObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
+    cowObject.translate(0.0f, 5.0f, 4.0f);
     cowObject.setObjectID(3);
     addSceneObject(cowObject);
 
-    // TODO ADD FAUSTÃO NÃO SEI PQ ELE N APARECE >:/
-     /*addSceneObject(faustaoObject);*/
+    // FLOOR
+    SceneObject floor("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    floor.translate(0.0f, 9.0f, 0.0f); // Floor
+    floor.scale(glm::vec3(5.0f, 0.5f, 15.0f));
+    floor.setObjectID(FLOOR);
+    addSceneObject(floor);
     
-    
+    // BACKWALL
+    SceneObject wall1("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    wall1.scale(glm::vec3(5.0f, 0.5f, 15.0f));
+    wall1.rotateX(1.57f);
+    wall1.translate(0.0f, 9.0f, 7.0f); 
+    wall1.setObjectID(WALL);
+    addSceneObject(wall1);
 
+    SceneObject wall2("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    wall2.scale(glm::vec3(5.0f, 0.5f, 20.0f));
+    wall2.rotateX(1.57f);
+    wall2.rotateY(1.25f);
+    wall2.translate(-3.0f, 9.0f, 7.0f); 
+    wall2.setObjectID(WALL);
+    addSceneObject(wall2);
+
+    SceneObject wall3("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    wall3.scale(glm::vec3(5.0f, 0.5f, 20.0f));
+    wall3.rotateX(1.57f);
+    wall3.rotateY(-1.25f);
+    wall3.translate(3.0f, 9.0f, 7.0f); 
+    wall3.setObjectID(WALL);
+    addSceneObject(wall3);
 }
 
 void CutScene::renderSceneObjects() {
