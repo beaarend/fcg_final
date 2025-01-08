@@ -287,6 +287,14 @@ void SceneObject::render(GpuProgramController& gpuProgramController)
         //gpuProgramController.DrawObjectHitbox(vertex_array_object_id, model_matrix, object_id, object_color, hitboxMin, hitboxMax);
         gpuProgramController.DrawObjectHitbox(vertex_array_object_id, model_matrix, object_id, object_color, this->bbox_min, this->bbox_max);
         glDrawElements(GL_TRIANGLES, shape.num_indices, GL_UNSIGNED_INT, (void *)(shape.first_index * sizeof(GLuint)));
+
+        // if (this->object_id == 9){
+        //     std::cout << "BBOX DO PLANO DA TV" << std::endl;
+        //     std::cout << "bbox_min: " << bbox_min.x << ", " << bbox_min.z << std::endl;
+        //     std::cout << "bbox_max: " << bbox_max.x << ", " << bbox_max.z << std::endl;
+        // }
+
+        
     }
     glBindVertexArray(0);
     /*std::cout<<this->hitbox<<std::endl;*/

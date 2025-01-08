@@ -9,11 +9,11 @@ CutScene::CutScene(GpuProgramController *gpu_controller)
     createSceneObjects();
     this->current_time = 0.0f;
     this->total_time = 10.0f;
-    this->camera_position = glm::vec4(0.0f, INIT_Y, INIT_Z, 1.0f); 
+    this->camera_position = glm::vec4(0.0f, INIT_Y+2.0f, INIT_Z, 1.0f); 
     this->final_camera_position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     this->bezier_time = 0.0f; 
-    this->control_point = glm::vec4(0.0f, 4.5f, 4.5f, 1.0f);
-    this->control_point2 = glm::vec4(0.0f, 2.5f, 2.5f, 1.0f);
+    this->control_point = glm::vec4(0.0f, 5.5f, 4.5f, 1.0f);
+    this->control_point2 = glm::vec4(0.0f, 3.5f, 2.5f, 1.0f);
 }
 
 void CutScene::Update(float delta_time) 
@@ -21,6 +21,12 @@ void CutScene::Update(float delta_time)
     if (this->current_time > 4.0f){
         AdjustCameraAngle();
         ComputeBezier(delta_time);
+
+        if (this->current_time > 9.1f && !is_cleared)
+        {
+            clearSceneObjects();
+            is_cleared = true;
+        }
     }
 
     this->look_at_camera->Update(this->camera_position);
@@ -72,6 +78,8 @@ void CutScene::AddLookAtCamera(LookAtCamera *look_at_camera)
 
 #define WALL 3
 #define FLOOR 7
+#define TV 8
+#define SCREEN 9
 
 void CutScene::createSceneObjects() {
     
@@ -80,27 +88,34 @@ void CutScene::createSceneObjects() {
     // sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
     // addSceneObject(sphereObject);
 
-    SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB,nullptr);
-    cowObject.translate(0.0f, 5.0f, 4.0f);
-    cowObject.setObjectID(3);
-    addSceneObject(cowObject);
-
-    // FLOOR
-    SceneObject floor("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+/*<<<<<<< HEAD*/
+/*    SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB,nullptr);*/
+/*    cowObject.translate(0.0f, 5.0f, 4.0f);*/
+/*    cowObject.setObjectID(3);*/
+/*    addSceneObject(cowObject);*/
+/*=======*/
+/*    // SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB);*/
+/*    // cowObject.translate(0.0f, 5.0f, 4.0f);*/
+/*    // cowObject.setObjectID(3);*/
+/*    // addSceneObject(cowObject);*/
+/*>>>>>>> 17fc6674d14bbe91936c4902d701207553f37ab4*/
+/**/
+    //FLOOR
+    SceneObject floor("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
     floor.translate(0.0f, 9.0f, 0.0f); // Floor
     floor.scale(glm::vec3(5.0f, 0.5f, 15.0f));
     floor.setObjectID(FLOOR);
     addSceneObject(floor);
     
     // BACKWALL
-    SceneObject wall1("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    SceneObject wall1("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
     wall1.scale(glm::vec3(5.0f, 0.5f, 15.0f));
     wall1.rotateX(1.57f);
     wall1.translate(0.0f, 9.0f, 7.0f); 
     wall1.setObjectID(WALL);
     addSceneObject(wall1);
 
-    SceneObject wall2("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    SceneObject wall2("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
     wall2.scale(glm::vec3(5.0f, 0.5f, 20.0f));
     wall2.rotateX(1.57f);
     wall2.rotateY(1.25f);
@@ -108,13 +123,28 @@ void CutScene::createSceneObjects() {
     wall2.setObjectID(WALL);
     addSceneObject(wall2);
 
-    SceneObject wall3("../../resources/objects/wall/plane.obj", "unique", HitboxType::AABB);
+    SceneObject wall3("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
     wall3.scale(glm::vec3(5.0f, 0.5f, 20.0f));
     wall3.rotateX(1.57f);
     wall3.rotateY(-1.25f);
     wall3.translate(3.0f, 9.0f, 7.0f); 
     wall3.setObjectID(WALL);
     addSceneObject(wall3);
+
+    SceneObject tvObject("../../resources/objects/cutscene/tv.obj", "unique", HitboxType::AABB);
+    tvObject.scale(glm::vec3(2.0f, 2.0f, 2.0f));
+    tvObject.rotateY(1.57f);
+    tvObject.translate(0.0f, 5.0f, 10.0f);
+    tvObject.setObjectID(TV);
+    addSceneObject(tvObject);
+
+    SceneObject screenObject("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
+    //screenObject.scale(glm::vec3(1.0f, 1.0f, 0.1f));
+    screenObject.rotateX(1.57f);
+    screenObject.scale(glm::vec3(0.65f, 0.45f, 0.1f));
+    screenObject.translate(0.0f, 5.6f, 10.5f);
+    screenObject.setObjectID(SCREEN);
+    addSceneObject(screenObject);
 }
 
 void CutScene::renderSceneObjects() {

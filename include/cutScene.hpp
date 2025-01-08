@@ -19,6 +19,8 @@ public:
     float total_time;
     float current_time;
 
+    bool is_cleared = false;
+
     LookAtCamera *look_at_camera;
     void AddLookAtCamera(LookAtCamera *look_at_camera);
     glm::vec4 camera_position;
