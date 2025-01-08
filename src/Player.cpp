@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "SceneObject.hpp"
+#include "Animation.hpp"
 #include <vector>
 
 Player::Player()
@@ -23,6 +24,10 @@ Player::Player()
     this->cursorPosX = 0.0f;
     this->cursorPosY = 0.0f;   
 
+    //define as animacoes para as partes do player
+    this->animations = std::vector<Animation*>(4);
+    /*Animation* leftArmAnimation = new Animation(this, )*/
+
 }
 
 void Player::Print()
@@ -40,57 +45,67 @@ void Player::AddFreeCamera(FreeCamera *free_camera)
     this->free_camera = free_camera;
 }
 
-void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor)
+void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor,std::vector<SceneObject*> spheres)
 {
+    glm::vec4 new_position = this->position;
+
     if (this->pressing_W){
-        this->position.z -= PLAYER_SPEED * delta_time;
-        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+        new_position.z -= PLAYER_SPEED * delta_time;
     }
     if (this->pressing_A){
-        this->position.x -= PLAYER_SPEED * delta_time;
-        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+        new_position.x -= PLAYER_SPEED * delta_time;
     }
     if (this->pressing_S){
-        this->position.z += PLAYER_SPEED * delta_time;
-        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+        new_position.z += PLAYER_SPEED * delta_time;
     }
     if (this->pressing_D){
-        this->position.x += PLAYER_SPEED * delta_time;
-        std::cout<<"new player position: "<<this->position.x<<" "<<this->position.y<<" "<<this->position.z<<std::endl;
+        new_position.x += PLAYER_SPEED * delta_time;
     }
-    /*if (this->pressing_C){*/
-    /*  this->position.y -= PLAYER_SPEED * delta_time;*/
-    /*}*/
 
-    
-  if (this->is_jumping)
+    bool collision = false;
+    /*for (auto& sphere : spheres)*/
+    /*{*/
+    /*  for (auto object : objects)*/
+    /*  {*/
+    /*    if (object->checkCollision(sphere))*/
+    /*    {*/
+    /*      collision = true;*/
+    /*      break;*/
+    /*    }*/
+    /*  }*/
+    /*}*/
+    for(int i=0;i<objects.size();i++)
   {
-    this->position.y += this->jump_velocity * delta_time;
-    this->jump_velocity -= GRAVITY;
-    if (this->position.y <= 0.0f)
+    for(int j=0;j<spheres.size();j++)
     {
-      this->position.y = 0.0f;
-      this->is_jumping = false;
+      if(objects[i]->checkCollision(*spheres[j]))
+      {
+        collision = true;
+        break;
+      }
     }
   }
-  /*else{*/
-  /*  for(auto object : objects){*/
-  /*    if(object->checkCollision(*floor)){*/
-  /*      /*std::cout<<"COLIDIU"<<std::endl;*/
-  /*      this->is_jumping = false;*/
-  /*    }else{*/
-  /*      if(!this->is_jumping)*/
-  /*        /*this->position.y -= GRAVITY;*/
-  /*    } */
-  /*  }*/
-  /*}*/
-   
-    
+
+    if (!collision)
+    {
+        this->position = new_position;
+    }
+
+    if (this->is_jumping)
+    {
+        this->position.y += this->jump_velocity * delta_time;
+        this->jump_velocity -= GRAVITY;
+        if (this->position.y <= 0.0f)
+        {
+            this->position.y = 0.0f;
+            this->is_jumping = false;
+        }
+    }
 }
 
-void Player::Update(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor)
+void Player::Update(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor, std::vector<SceneObject*> spheres)
 {   
-    this->UpdatePosition(delta_time,objects,floor);
+    this->UpdatePosition(delta_time,objects,floor, spheres);
 
     switch(this->camera_mode)
     {

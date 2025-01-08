@@ -288,7 +288,7 @@ void main()
     }
 
     // REQUISITO: Modelo de Phong
-    else if (object_id == SPHERE || object_id == WALL || object_id == FLOOR || object_id == TV)
+    else if (object_id >= 10 || object_id == WALL || object_id == FLOOR || object_id == TV)
     {
         color.rgb = (lambert_diffuse_term + ambient_term + phong_specular_term) * texture_color;
     }

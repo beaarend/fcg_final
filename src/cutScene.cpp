@@ -88,11 +88,18 @@ void CutScene::createSceneObjects() {
     // sphereObject.translate(0.0f, INIT_Y, INIT_Z+4.0f);
     // addSceneObject(sphereObject);
 
-    // SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB);
-    // cowObject.translate(0.0f, 5.0f, 4.0f);
-    // cowObject.setObjectID(3);
-    // addSceneObject(cowObject);
-
+/*<<<<<<< HEAD*/
+/*    SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB,nullptr);*/
+/*    cowObject.translate(0.0f, 5.0f, 4.0f);*/
+/*    cowObject.setObjectID(3);*/
+/*    addSceneObject(cowObject);*/
+/*=======*/
+/*    // SceneObject cowObject("../../resources/objects/cow.obj", "unique", HitboxType::AABB);*/
+/*    // cowObject.translate(0.0f, 5.0f, 4.0f);*/
+/*    // cowObject.setObjectID(3);*/
+/*    // addSceneObject(cowObject);*/
+/*>>>>>>> 17fc6674d14bbe91936c4902d701207553f37ab4*/
+/**/
     //FLOOR
     SceneObject floor("../../resources/objects/cutscene/plane.obj", "unique", HitboxType::AABB);
     floor.translate(0.0f, 9.0f, 0.0f); // Floor

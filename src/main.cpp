@@ -310,7 +310,6 @@ int main(int argc, char* argv[])
 
     std::vector<SceneObject*> sceneObjects;
     std::vector<SceneObject*> spheres(3);
-    std::vector<Animation*> animations;
     
     /*SceneObject sphereObject("../../resources/objects/sphere.obj", "unique", HitboxType::SPHERE);*/
     /*sphereObject.setObjectID(0);*/
@@ -319,20 +318,20 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < spheres.size(); i++)
     {
+        //numero aleatorio entre 0 e 8
+        float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.0f));
+        Animation* animation = new Animation( glm::vec3(2.0f*i, 0.0f, -15.0f), glm::vec3(2.0f*i, 0.0f, 10.0f), 5.0f,x);
         std::cout<<"Creating sphere "<<i<<std::endl;
-        SceneObject* sphereObject = new SceneObject("../../resources/objects/enemies/sphere.obj", "unique", HitboxType::SPHERE);
+        std::cout<<"creating animation "<<animation<<std::endl; 
+        SceneObject* sphereObject = new SceneObject("../../resources/objects/enemies/sphere.obj", "unique", HitboxType::SPHERE,animation);
         sphereObject->setObjectID(10+i);
         sphereObject->setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
         sceneObjects.push_back(sphereObject);
         spheres[i] = sphereObject;
-        //numero aleatorio entre 0 e 8
-        float x = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/3.0f));
-        Animation* animation = new Animation(sphereObject, glm::vec3(2.0f*i, 0.0f, -15.0f), glm::vec3(2.0f*i, 0.0f, 10.0f), 5.0f,x);
-        animations.push_back(animation);
     }
 
     std::vector<SceneObject*> faustaoParts;
-    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple", HitboxType::AABB);
+    SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple", HitboxType::AABB,nullptr);
 
     #define FAUSTAO_HAIR 4
     #define FAUSTAO_FACE 5
@@ -380,11 +379,19 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/cutscene/tv.png"); // texture7
     LoadTextureImage("../../resources/objects/cutscene/screen.png"); // texture7
 
-    SceneObject rampObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB);
-    rampObject.setObjectID(PLANE);
-    sceneObjects.push_back(&rampObject);
-    rampObject.scale(glm::vec3(20.0f, 0.5f, 45.0f));
-    rampObject.translate(0.0f, -1.90f, -2.5f);
+/*<<<<<<< HEAD*/
+    SceneObject* rampObject= new SceneObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB,nullptr);
+    rampObject->setObjectID(PLANE);
+    sceneObjects.push_back(rampObject);
+    rampObject->scale(glm::vec3(20.0f, 0.5f, 45.0f));
+    rampObject->translate(0.0f, -1.90f, -2.5f);
+/*=======*/
+/*    SceneObject rampObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB);*/
+/*    rampObject.setObjectID(PLANE);*/
+/*    sceneObjects.push_back(&rampObject);*/
+/*    rampObject.scale(glm::vec3(20.0f, 0.5f, 45.0f));*/
+/*    rampObject.translate(0.0f, -1.90f, -2.5f);*/
+/*>>>>>>> 17fc6674d14bbe91936c4902d701207553f37ab4*/
 
     if ( argc > 1 )
     {
@@ -447,7 +454,18 @@ int main(int argc, char* argv[])
         }
         else if (gameState == GAMEPLAY)
         {
-            player.Update(delta_time, faustaoParts, &rampObject);
+            player.Update(delta_time, faustaoParts, rampObject,spheres);
+            for(auto& sphere: spheres)
+            {
+              for(auto& object: faustaoParts)
+              {
+                if(object->checkCollision(*sphere))
+                {
+                  std::cout<<"COLIDIU"<<std::endl;
+                  
+                }
+              }
+            }
 
         }
         #define SPHERE 0
@@ -470,20 +488,38 @@ int main(int argc, char* argv[])
             {
                 if(object->checkCollision(*sphere))
                 {
-                    /*std::cout<<"COLIDIU"<<std::endl;*/
+                    std::cout<<"COLIDIU"<<std::endl;
                 }
             }
         }
         
-        for(auto &animation : animations)
-        {
-            animation->Update(delta_time);
-        }
 
 
-        for(auto sceneobject : sceneObjects)
+        /*for(auto& sceneobject : sceneObjects)*/
+        /*{*/
+        /*    std::cout<<"Aehooo\n";*/
+        /*    sceneobject->getAnimation()->Update(delta_time,sceneobject);*/
+        /*    sceneobject->render(gpu_controller);*/
+        /*}*/
+        for(int i=0;i<sceneObjects.size();i++)
         {
-            sceneobject->render(gpu_controller);
+
+            Animation* animation = sceneObjects[i]->getAnimation();
+            if(animation != nullptr)
+            {
+                animation->Update(delta_time,sceneObjects[i]);
+            }
+            sceneObjects[i]->render(gpu_controller);
+            for(auto& sphere:spheres)
+            {
+              for(auto& object:faustaoParts)
+              {
+                if(object->checkCollision(*sphere))
+                {
+                  sphere->getAnimation()->Restart(sphere);
+                }
+              }
+            }
         }
         
         // Imprimimos na tela informação sobre o número de quadros renderizados

@@ -215,9 +215,10 @@ SceneObject::SceneObject(const tinyobj::attrib_t &attrib,
     }
 }
 
-SceneObject::SceneObject(const char *filename, const char *flag, HitboxType hitboxType=HitboxType::AABB)
+SceneObject::SceneObject(const char *filename, const char *flag, HitboxType hitboxType=HitboxType::AABB,Animation* animation)
 {
     std::cout<<"carregando objeto: "<<filename<<std::endl;
+    this->animation = animation;
     std::string fullpath(filename);
     auto i = fullpath.find_last_of("/");
     const char *basepath = NULL;
@@ -406,4 +407,8 @@ glm::vec3 SceneObject::getBboxMax(){
 
 int SceneObject::getID(){
   return this->object_id;
+}
+
+Animation* SceneObject::getAnimation(){
+  return this->animation;
 }

@@ -10,6 +10,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include<matrices.h>
 #include <gpuProgramController.h>
+#include<Animation.hpp>
+
+class Animation;
+
 class SceneObject
 {
 private:
@@ -21,6 +25,7 @@ private:
   /*void calculateHitbox();*/
   glm::vec3 object_color=glm::vec3(0.5f,0.5f,0.5f);
   Hitbox* hitbox=nullptr;
+  Animation* animation=nullptr;
   
   /*glm::vec3 hitboxMin;*/
   /*glm::vec3 hitboxMax;*/
@@ -31,7 +36,7 @@ private:
 
 
 public:
-    SceneObject(const char* filename, const char *flag, HitboxType hitboxType);
+    SceneObject(const char* filename, const char *flag, HitboxType hitboxType,Animation* animation=nullptr);
 
     SceneObject(const tinyobj::attrib_t &attrib, 
                          const tinyobj::shape_t &shape, 
@@ -71,4 +76,5 @@ public:
     glm::vec3 getBboxMax();
     bool getPlaneInfo(glm::vec3& planePoint, glm::vec3& planeNormal);
     int getID();
+    Animation* getAnimation();
 };
