@@ -30,8 +30,7 @@ Utilizamos o **GitHub Copilot**, baseado no ChatGPT, como ferramenta auxiliar du
 - **Contribuições da ferramenta:**  
   - Foi útil para identificar e corrigir erros de código, especialmente na implementação das câmeras.  
   - Mostrou limitações ao lidar com shaders, frequentemente gerando código incorreto ou quebrando partes do programa.
-
-**Análise crítica:**  
+ 
 Embora o **Copilot** tenha se mostrado útil em algumas partes do trabalho, como no debugging, ele foi menos eficaz para lidar com aspectos mais específicos e complexos, como shaders. Apesar disso, sua utilização acelerou algumas etapas e ajudou a identificar problemas sutis que passariam despercebidos.
 
 ---
