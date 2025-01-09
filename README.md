@@ -82,7 +82,7 @@ Siga os passos abaixo para compilar e executar a aplicação:
 
 1. Clone o repositório:  
    ```bash
-   git clone <https://github.com/beaarend/fcg_final>
+   git clone https://github.com/beaarend/fcg_final
 2. Crie uma pasta para a build:
    ```bash
    mkdir build
