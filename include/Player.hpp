@@ -29,8 +29,8 @@ private:
     CameraMode camera_mode;
 
     const float PLAYER_SPEED = 3.0f;
-    const float GRAVITY = 0.1f;
-    const float JUMP_STRENGHT = 2.5f;
+    const float GRAVITY = 5.0f;
+    const float JUMP_STRENGHT = 5.5f;
 
     void UpdatePosition(float delta_time,std::vector<SceneObject*> objects,SceneObject* floor,std::vector<SceneObject*> spheres);
 

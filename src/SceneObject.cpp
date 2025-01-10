@@ -298,7 +298,7 @@ void SceneObject::render(GpuProgramController& gpuProgramController)
     }
     glBindVertexArray(0);
     /*std::cout<<this->hitbox<<std::endl;*/
-    this->hitbox->draw(gpuProgramController);
+    /*this->hitbox->draw(gpuProgramController);*/
 }
 
 

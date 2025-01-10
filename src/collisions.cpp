@@ -11,8 +11,6 @@ glm::vec4 vec3ToVec4(const glm::vec3& v, float w = 0.0f) {
 
 bool Collisions::AABBsTest(const glm::vec3& min1, const glm::vec3& max1, const glm::vec3& min2, const glm::vec3& max2){
     
-  //std::cout<<"testando colisao entre os pontos: "<<min1.x<<" "<<min1.y<<" "<<min1.z<<" e "<<max1.x<<" "<<max1.y<<" "<<max1.z<<std::endl;
-
   glm::vec3 temp1=min1;
   glm::vec3 temp2=max1;
   glm::vec3 temp3=min2;
@@ -115,15 +113,6 @@ bool Collisions::SpheresTest(const glm::vec3& center1, float radius1, const glm:
     float distance = glm::distance(center1, center2);
     return distance < radius1 + radius2;
 }
-/*void DrawSphere(const glm::vec3& position, float radius) {*/
-/*    // Exemplo usando uma função utilitária para desenhar a esfera.*/
-/*    // Substitua por sua função de desenho.*/
-/*    glPushMatrix();*/
-/*    glTranslatef(position.x, position.y, position.z);*/
-/*    glutSolidSphere(radius, 16, 16);  // Desenha a esfera (precisa de GLUT ou equivalente)*/
-/*    glPopMatrix();*/
-/*}*/
-
 bool Collisions::SphereABBTest(const glm::vec3& center, float radius, const glm::vec3& min, const glm::vec3& max) {
     // Calcula o ponto mais próximo da esfera dentro do AABB
     glm::vec3 correctedMin = glm::min(min, max);

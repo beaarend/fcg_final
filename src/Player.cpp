@@ -45,7 +45,7 @@ void Player::AddFreeCamera(FreeCamera *free_camera)
     this->free_camera = free_camera;
 }
 
-void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,SceneObject* floor,std::vector<SceneObject*> spheres)
+void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects, SceneObject* floor, std::vector<SceneObject*> spheres)
 {
     glm::vec4 new_position = this->position;
 
@@ -63,28 +63,17 @@ void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,
     }
 
     bool collision = false;
-    /*for (auto& sphere : spheres)*/
-    /*{*/
-    /*  for (auto object : objects)*/
-    /*  {*/
-    /*    if (object->checkCollision(sphere))*/
-    /*    {*/
-    /*      collision = true;*/
-    /*      break;*/
-    /*    }*/
-    /*  }*/
-    /*}*/
-    for(int i=0;i<objects.size();i++)
-  {
-    for(int j=0;j<spheres.size();j++)
+    for (int i = 0; i < objects.size(); i++)
     {
-      if(objects[i]->checkCollision(*spheres[j]))
-      {
-        collision = true;
-        break;
-      }
+        for (int j = 0; j < spheres.size(); j++)
+        {
+            if (objects[i]->checkCollision(*spheres[j]))
+            {
+                collision = true;
+                break;
+            }
+        }
     }
-  }
 
     if (!collision)
     {
@@ -93,13 +82,38 @@ void Player::UpdatePosition(float delta_time, std::vector<SceneObject*> objects,
 
     if (this->is_jumping)
     {
-        this->position.y += this->jump_velocity * delta_time;
-        this->jump_velocity -= GRAVITY;
-        if (this->position.y <= 0.0f)
+        bool collision = false;
+        for (int i = 0; i < objects.size(); i++)
         {
-            this->position.y = 0.0f;
-            this->is_jumping = false;
+            if (objects[i]->checkCollision(*floor))
+            {
+                collision = true;
+                break;
+            }
         }
+
+        this->position.y += this->jump_velocity * delta_time;
+        this->jump_velocity -= GRAVITY * delta_time; 
+
+        if (collision && this->jump_velocity <= 0) 
+        {
+            this->is_jumping = false;
+            this->jump_velocity = 0.0f; 
+        }
+    }
+    else
+    {
+        bool collision = false;
+        for (int i = 0; i < objects.size(); i++)
+        {
+            if (objects[i]->checkCollision(*floor))
+            {
+                collision = true;
+                break;
+            }
+        }
+        if (!collision)
+            this->position.y -= GRAVITY * delta_time;
     }
 }
 
@@ -196,6 +210,7 @@ void Player::KeyCallback(GLFWwindow* window, int key, int scancode, int action, 
     // Jump key
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
     {
+        this->position.y+=0.5f;
         this->pressing_Space = true;
         this->is_jumping = true;
         this->jump_velocity = JUMP_STRENGHT;

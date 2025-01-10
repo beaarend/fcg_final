@@ -329,6 +329,12 @@ int main(int argc, char* argv[])
         sceneObjects.push_back(sphereObject);
         spheres[i] = sphereObject;
     }
+    Animation* animation = new Animation( glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(10.0f, 0.0f, 0.0f), 5.0f,0.0f);
+    SceneObject* parallelSphere= new SceneObject("../../resources/objects/enemies/sphere.obj", "unique", HitboxType::SPHERE,animation);
+    parallelSphere->setObjectID(10+3);
+    parallelSphere->setObjectColor(glm::vec3(1.0f, 0.0f, 0.0f));
+    sceneObjects.push_back(parallelSphere);
+    spheres.push_back(parallelSphere);
 
     std::vector<SceneObject*> faustaoParts;
     SceneObject faustaoObject("../../resources/objects/faustao/Faustovski.obj", "multiple", HitboxType::AABB,nullptr);
@@ -379,19 +385,11 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../resources/objects/cutscene/tv.png"); // texture7
     LoadTextureImage("../../resources/objects/cutscene/screen.png"); // texture7
 
-/*<<<<<<< HEAD*/
     SceneObject* rampObject= new SceneObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB,nullptr);
     rampObject->setObjectID(PLANE);
     sceneObjects.push_back(rampObject);
     rampObject->scale(glm::vec3(20.0f, 0.5f, 45.0f));
     rampObject->translate(0.0f, -1.90f, -2.5f);
-/*=======*/
-/*    SceneObject rampObject("../../resources/objects/ramp/plane.obj", "unique", HitboxType::AABB);*/
-/*    rampObject.setObjectID(PLANE);*/
-/*    sceneObjects.push_back(&rampObject);*/
-/*    rampObject.scale(glm::vec3(20.0f, 0.5f, 45.0f));*/
-/*    rampObject.translate(0.0f, -1.90f, -2.5f);*/
-/*>>>>>>> 17fc6674d14bbe91936c4902d701207553f37ab4*/
 
     if ( argc > 1 )
     {
@@ -519,6 +517,15 @@ int main(int argc, char* argv[])
                   sphere->getAnimation()->Restart(sphere);
                 }
               }
+            }
+            for(int i=0;i<spheres.size();i++){
+              for(int j=i+1;j<spheres.size();j++){
+                if(spheres[i]->checkCollision(*spheres[j])){
+                  spheres[i]->getAnimation()->Restart(spheres[i]);
+                  spheres[j]->getAnimation()->Restart(spheres[j]);
+                }
+              }
+          
             }
         }
         
